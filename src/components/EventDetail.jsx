@@ -1,32 +1,97 @@
+import { useState } from "react";
+import TicketModal from "./TicketModal"; // Yeni yaptığımız modalı çağırdık
+import apiClient from "../apiClient";
+
 function EventDetail({ event, onBack }) {
+  const [showModal, setShowModal] = useState(false); // Modal açık mı kapalı mı?
+  const [message, setMessage] = useState(null); // Başarılı/Hatalı mesajı için
+
   if (!event) return null;
 
+  // Modal'dan "Onayla" gelince çalışacak fonksiyon
+  const handlePurchase = async (quantity, customerName) => {
+    try {
+      // Backend'e gidecek veri (Senin backend DTO yapına göre burası değişebilir)
+      const requestBody = {
+        eventId: event.id,
+        quantity: quantity,
+        customerName: customerName // Eğer backend istemiyorsa bunu silebilirsin
+      };
+
+      // Backend'e POST isteği atıyoruz
+      // Backend endpointin muhtemelen '/api/tickets' şeklindedir. Kontrol et.
+      await apiClient.post("/api/tickets/purchase", requestBody);
+
+      // Başarılı olursa
+      setShowModal(false); // Modalı kapat
+      setMessage({ type: "success", text: "🎉 Bilet başarıyla satın alındı!" });
+
+    } catch (error) {
+      console.error("Satın alma hatası:", error);
+      const errorMsg = error.response?.data?.message || "Satın alma işlemi başarısız oldu.";
+      setMessage({ type: "danger", text: `❌ Hata: ${errorMsg}` });
+      setShowModal(false);
+    }
+  };
+
   return (
-    <div className="container text-light mt-4">
-      <button onClick={onBack} className="btn btn-outline-secondary mb-3">
+    <div className="text-light mt-4">
+      
+      {/* Mesaj Kutusu (Varsa göster) */}
+      {message && (
+        <div className={`alert alert-${message.type} alert-dismissible fade show`} role="alert">
+          {message.text}
+          <button type="button" className="btn-close" onClick={() => setMessage(null)}></button>
+        </div>
+      )}
+
+      {/* Geri Dön Butonu */}
+      <button onClick={onBack} className="btn btn-outline-secondary mb-4">
         ← Listeye Dön
       </button>
 
-      <div className="card bg-dark border-secondary text-light">
-        <div className="card-body">
-          <h2 className="card-title display-6">{event.title}</h2>
-          <p className="text-muted fs-5">{event.description || "Açıklama bulunmuyor."}</p>
-          
-          <hr className="border-secondary"/>
-          
+      {/* Etkinlik Detay Kartı */}
+      <div className="card bg-dark border-secondary text-light shadow-lg">
+        <div className="card-body p-5">
           <div className="row">
-            <div className="col-md-6">
-                <p><strong>Şehir:</strong> {event.city}</p>
-                <p><strong>Mekan:</strong> {event.venue}</p>
-                <p><strong>Tarih:</strong> {event.dateTime ? new Date(event.dateTime).toLocaleString("tr-TR") : "-"}</p>
+            {/* Sol Taraf: Bilgiler */}
+            <div className="col-md-8">
+              <h2 className="display-5 fw-bold mb-3">{event.title}</h2>
+              <p className="lead text-secondary">{event.description || "Açıklama bulunmuyor."}</p>
+              
+              <div className="mt-4">
+                <p className="mb-2"><strong className="text-info">📍 Mekan:</strong> {event.venue}, {event.city}</p>
+                <p className="mb-2"><strong className="text-warning">📅 Tarih:</strong> {event.dateTime ? new Date(event.dateTime).toLocaleString("tr-TR") : "-"}</p>
+              </div>
             </div>
-            <div className="col-md-6 text-md-end">
-                <h3 className="text-primary">{event.price} ₺</h3>
-                <button className="btn btn-success btn-lg mt-3">Satın Al</button>
+
+            {/* Sağ Taraf: Fiyat ve Buton */}
+            <div className="col-md-4 text-md-end border-start border-secondary ps-md-5 mt-4 mt-md-0 d-flex flex-column justify-content-center">
+              <div className="mb-4">
+                <span className="d-block text-secondary small">Bilet Fiyatı</span>
+                <span className="display-6 fw-bold text-success">{event.price} ₺</span>
+              </div>
+              
+              <button 
+                className="btn btn-success btn-lg w-100 py-3 fw-bold"
+                onClick={() => setShowModal(true)} // Butona basınca Modalı aç
+              >
+                🎟️ Bilet Satın Al
+              </button>
             </div>
           </div>
         </div>
       </div>
+
+      {/* MODAL: Eğer showModal true ise ekrana gelir */}
+      {showModal && (
+        <TicketModal 
+          event={event} 
+          onClose={() => setShowModal(false)} // Kapatma
+          onConfirm={handlePurchase}          // Satın alma işlemi
+        />
+      )}
+
     </div>
   );
 }
