@@ -1,6 +1,6 @@
 import { useState } from "react";
 import apiClient from "../apiClient";
-
+import { jwtDecode } from "jwt-decode";
 function Auth({ onLoginSuccess }) {
   const [isLogin, setIsLogin] = useState(true); // Giriş modunda mı, Kayıt modunda mı?
   const [username, setUsername] = useState("");
@@ -26,8 +26,12 @@ function Auth({ onLoginSuccess }) {
         // GİRİŞ BAŞARILI: Token'ı kaydet
         // Backend'den dönen yapın { token: "..." } ise:
         const token = response.data.token || response.data; // String dönerse direkt al
+        // YENİ KISIM: Token'ı çöz ve rolü al
+        const decoded = jwtDecode(token); 
+        const userRole = decoded.role; // Backend'de "role" diye kaydetmiştik
         localStorage.setItem("token", token);
         localStorage.setItem("username", username);
+        localStorage.setItem("role", userRole); // <-- ROLÜ KAYDETTİK
         onLoginSuccess(); // App.jsx'e haber ver
       } else {
         // KAYIT BAŞARILI: Giriş ekranına dön
