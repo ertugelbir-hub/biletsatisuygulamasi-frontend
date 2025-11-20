@@ -8,6 +8,7 @@ import AdminPanel from "./components/admin/AdminPanel"; // Admin Paneli importu
 import "bootstrap/dist/css/bootstrap.min.css";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css'; // <-- CSS şart!
+import SearchBar from "./components/SearchBar";
 function App() {
   // --- 1. STATE TANIMLARI (Hepsi En Tepede) ---
   const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem("token"));
@@ -33,11 +34,29 @@ function App() {
   }, [isAuthenticated]);
 
   // --- 3. YARDIMCI FONKSİYONLAR ---
-  async function loadEvents() {
+ // searchParams isteğe bağlıdır, boş gelirse tümünü çeker
+  async function loadEvents(searchParams = {}) {
     try {
       setLoading(true);
-      const response = await apiClient.get("/api/events");
+      
+      let url = "/api/events";
+      let config = {};
+
+      // Boş olmayan filtreleri ayıkla (Temizlik)
+      const cleanParams = {};
+      if (searchParams.q && searchParams.q.trim() !== "") cleanParams.q = searchParams.q;
+      if (searchParams.city && searchParams.city !== "") cleanParams.city = searchParams.city;
+      if (searchParams.type && searchParams.type !== "") cleanParams.type = searchParams.type;
+
+      // Eğer en az 1 filtre varsa arama moduna geç
+      if (Object.keys(cleanParams).length > 0) {
+        url = "/api/events/search";
+        config = { params: cleanParams };
+      }
+
+      const response = await apiClient.get(url, config);
       const data = response.data;
+      
       setEvents(Array.isArray(data.content) ? data.content : (Array.isArray(data) ? data : []));
       setError("");
     } catch (e) {
@@ -45,7 +64,7 @@ function App() {
       if (e.response && e.response.status === 401) {
          handleLogout();
       } else {
-         setError("Veriler sunucudan çekilemedi.");
+         setError("Etkinlikler yüklenirken hata oluştu.");
       }
     } finally {
       setLoading(false);
@@ -90,11 +109,11 @@ function App() {
   }
 
   // --- 5. GÖRÜNÜM (RETURN) ---
-  return (
+return (
     <div style={{ width: "100vw", minHeight: "100vh", backgroundColor: "#212529", margin: 0, padding: 0, overflowX: "hidden" }}>
       <div className="container py-5" style={{ maxWidth: "1200px", margin: "0 auto" }}>
         
-        {/* HEADER */}
+        {/* --- 1. HEADER (BAŞLIK VE BUTONLAR) --- */}
         <div className="d-flex justify-content-between align-items-center mb-5 border-bottom border-secondary pb-3">
           <div role="button" onClick={() => {
               setSelectedEvent(null); 
@@ -106,8 +125,7 @@ function App() {
           
           {isAuthenticated && (
             <div className="d-flex gap-3">
-               
-               {/* ADMIN BUTONU (Sadece Admin ise görünür) */}
+               {/* Admin Butonu */}
                {userRole === 'ADMIN' && (
                  <button 
                    className={`btn ${showAdmin ? 'btn-danger' : 'btn-outline-danger'}`}
@@ -120,7 +138,6 @@ function App() {
                    Yönetici Paneli
                  </button>
                )}
-
                {/* Biletlerim Butonu */}
                <button 
                  className={`btn ${showMyTickets ? 'btn-warning' : 'btn-outline-warning'}`}
@@ -132,27 +149,30 @@ function App() {
                >
                  Biletlerim
                </button>
-
                {/* Çıkış Butonu */}
                <button onClick={handleLogout} className="btn btn-outline-danger">
                  Çıkış ({localStorage.getItem("username")})
                </button>
-               
             </div>
-            
           )}
         </div>
 
-        {/* MAIN CONTENT */}
+        {/* --- 2. ARAMA ÇUBUĞU (SADECE ANA SAYFADA) --- */}
+        {isAuthenticated && !selectedEvent && !showMyTickets && !showAdmin &&(
+           <SearchBar onSearch={(filters) => loadEvents(filters)} />
+        )}
+
+        {/* --- 3. ANA İÇERİK --- */}
         {content}
 
       </div>
-      {/* 👇 EN ALTA BUNU EKLE 👇 */}
-    <ToastContainer 
-       position="top-right" 
-       autoClose={3000} 
-       theme="dark" 
-    />
+
+      {/* --- 4. BİLDİRİMLER --- */}
+      <ToastContainer 
+         position="top-right" 
+         autoClose={3000} 
+         theme="dark" 
+      />
     </div>
   );
 }
