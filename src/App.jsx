@@ -2,25 +2,26 @@ import { useEffect, useState } from "react";
 import apiClient from "./apiClient";
 import EventList from "./components/EventList";
 import EventDetail from "./components/EventDetail";
-import Auth from "./components/Auth"; // Yeni bileşeni ekledik
+import Auth from "./components/Auth";
+import MyTickets from "./components/MyTickets"; // YENİ EKLENDİ
 import "bootstrap/dist/css/bootstrap.min.css";
 
 function App() {
-  // KULLANICI OTURUM DURUMU
-  // localStorage'da token varsa true kabul et
   const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem("token"));
   
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  
+  // SAYFA YÖNETİMİ
   const [selectedEvent, setSelectedEvent] = useState(null);
+  const [showMyTickets, setShowMyTickets] = useState(false); // YENİ: Biletlerim sayfası açık mı?
 
-  // Token varsa Eventleri Yükle
   useEffect(() => {
     if (isAuthenticated) {
       loadEvents();
     } else {
-      setLoading(false); // Giriş yapmamışsa yüklemeyi durdur
+      setLoading(false);
     }
   }, [isAuthenticated]);
 
@@ -33,7 +34,6 @@ function App() {
       setError("");
     } catch (e) {
       console.error(e);
-      // Eğer 401 hatası alırsak (Token geçersizse) oturumu düşür
       if (e.response && e.response.status === 401) {
          handleLogout();
       } else {
@@ -49,15 +49,18 @@ function App() {
     localStorage.removeItem("username");
     setIsAuthenticated(false);
     setSelectedEvent(null);
+    setShowMyTickets(false);
     setEvents([]);
   };
 
-  // --- İÇERİK YÖNETİMİ ---
+  // --- İÇERİK YÖNETİMİ (SIRA ÖNEMLİ) ---
   let content;
 
   if (!isAuthenticated) {
-    // GİRİŞ YAPMAMIŞSA -> AUTH EKRANI
     content = <Auth onLoginSuccess={() => setIsAuthenticated(true)} />;
+  } else if (showMyTickets) {
+    // YENİ: Biletlerim sayfasını göster
+    content = <MyTickets onBack={() => setShowMyTickets(false)} />;
   } else if (loading) {
     content = <div className="text-center mt-5 text-white">Yükleniyor...</div>;
   } else if (error) {
@@ -72,16 +75,29 @@ function App() {
     <div style={{ width: "100vw", minHeight: "100vh", backgroundColor: "#212529", margin: 0, padding: 0, overflowX: "hidden" }}>
       <div className="container py-5" style={{ maxWidth: "1200px", margin: "0 auto" }}>
         
+        {/* HEADER */}
         <div className="d-flex justify-content-between align-items-center mb-5 border-bottom border-secondary pb-3">
-          <div>
+          <div role="button" onClick={() => {setSelectedEvent(null); setShowMyTickets(false);}}>
             <h1 className="h2 fw-bold text-white mb-0">🎟️ Bilet Satış</h1>
           </div>
           
-          {/* Çıkış Yap Butonu (Sadece giriş yapmışsa görünür) */}
           {isAuthenticated && (
-             <button onClick={handleLogout} className="btn btn-outline-danger btn-sm">
-               Çıkış Yap ({localStorage.getItem("username")})
-             </button>
+            <div className="d-flex gap-3">
+               {/* YENİ: Biletlerim Butonu */}
+               <button 
+                 className={`btn ${showMyTickets ? 'btn-warning' : 'btn-outline-warning'}`}
+                 onClick={() => {
+                    setShowMyTickets(true); 
+                    setSelectedEvent(null);
+                 }}
+               >
+                 Biletlerim
+               </button>
+
+               <button onClick={handleLogout} className="btn btn-outline-danger">
+                 Çıkış ({localStorage.getItem("username")})
+               </button>
+            </div>
           )}
         </div>
 
