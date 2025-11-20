@@ -3,6 +3,8 @@ import apiClient from "../../apiClient";
 import EventTable from './EventTable'; // Tablo bileşenini çağırdık
 import EventForm from './EventForm';   // Form bileşenini çağırdık
 import SalesReports from './SalesReports';
+import TicketManager from './TicketManager';
+import UserManager from './UserManager';
 function AdminPanel({ onBack }) {
   const [activeTab, setActiveTab] = useState("list");
   const [events, setEvents] = useState([]);
@@ -97,6 +99,22 @@ function AdminPanel({ onBack }) {
             📊 Raporlar
           </button>
         </li>
+        <li className="nav-item">
+      <button 
+        className={`nav-link ${activeTab === "tickets" ? "active bg-dark text-warning border-secondary border-bottom-0" : "text-secondary"}`} 
+        onClick={() => setActiveTab("tickets")}
+      >
+        🎫 Biletler
+      </button>
+    </li>
+    <li className="nav-item">
+      <button 
+        className={`nav-link ${activeTab === "users" ? "active bg-dark text-warning border-secondary border-bottom-0" : "text-secondary"}`} 
+        onClick={() => setActiveTab("users")}
+      >
+        👥 Üyeler
+      </button>
+    </li>
       </ul>
 
       {/* İÇERİK: Ne kadar temiz durduğuna bak 👇 */}
@@ -114,10 +132,15 @@ function AdminPanel({ onBack }) {
           initialData={editingEvent} 
           onSubmit={handleSave} 
         />
-      ) : (
+      ) :activeTab === "reports" ? (
         // Raporlar Sekmesi
         <SalesReports />
-      )}
+      ):activeTab === "tickets" ?(
+     <TicketManager />    // <--- YENİ
+  ) : (
+     <UserManager />      // <--- YENİ
+  )
+      }
     </div>
   );
 }
