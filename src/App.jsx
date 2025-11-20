@@ -4,7 +4,7 @@ import EventList from "./components/EventList";
 import EventDetail from "./components/EventDetail";
 import Auth from "./components/Auth";
 import MyTickets from "./components/MyTickets";
-import AdminPanel from "./components/AdminPanel"; // Admin Paneli importu
+import AdminPanel from "./components/admin/AdminPanel"; // Admin Paneli importu
 import "bootstrap/dist/css/bootstrap.min.css";
 
 function App() {
