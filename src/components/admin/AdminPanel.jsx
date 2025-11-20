@@ -5,10 +5,10 @@ import EventForm from './EventForm';   // Form bileşenini çağırdık
 import SalesReports from './SalesReports';
 import TicketManager from './TicketManager';
 import UserManager from './UserManager';
+import { toast } from 'react-toastify';
 function AdminPanel({ onBack }) {
   const [activeTab, setActiveTab] = useState("list");
-  const [events, setEvents] = useState([]);
-  const [message, setMessage] = useState(null);
+  const [events, setEvents] = useState([]);  
   const [editingEvent, setEditingEvent] = useState(null); // Düzenlenecek veri
 
   // --- API İŞLEMLERİ ---
@@ -29,10 +29,10 @@ function AdminPanel({ onBack }) {
     try {
       if (editingEvent) {
         await apiClient.put(`/api/events/${editingEvent.id}`, formData);
-        setMessage({ type: "success", text: "✅ Güncelleme başarılı!" });
+        toast.success("✅ Güncelleme başarılı!");
       } else {
         await apiClient.post("/api/events", formData);
-        setMessage({ type: "success", text: "✅ Kayıt başarılı!" });
+       toast.success("✅ Kayıt başarılı!");
       }
       
       // İşlem bitince listeye dön
@@ -40,7 +40,7 @@ function AdminPanel({ onBack }) {
       setTimeout(() => setActiveTab("list"), 1000);
     } catch (error) {
       const errorMsg = error.response?.data?.message || "Hata oluştu.";
-      setMessage({ type: "danger", text: `❌ ${errorMsg}` });
+      toast.error(`❌ ${errorMsg}`);
     }
   };
 
@@ -48,10 +48,10 @@ function AdminPanel({ onBack }) {
     if (!window.confirm("Silmek istediğine emin misin?")) return;
     try {
       await apiClient.delete(`/api/events/${id}`);
-      setMessage({ type: "success", text: "🗑️ Silindi." });
+      toast.success("🗑️ Silindi.");
       fetchEvents();
     } catch (error) {
-      setMessage({ type: "danger", text: "Silinemedi." });
+      toast.error("Silinemedi.");
     }
   };
 
@@ -62,15 +62,7 @@ function AdminPanel({ onBack }) {
       <div className="d-flex align-items-center mb-4">
           <button onClick={onBack} className="btn btn-outline-secondary me-3">← Çıkış</button>
           <h2 className="mb-0">👔 Yönetici Paneli</h2>
-      </div>
-
-      {/* Mesaj */}
-      {message && (
-        <div className={`alert alert-${message.type} alert-dismissible fade show`} role="alert">
-          {message.text}
-          <button type="button" className="btn-close" onClick={() => setMessage(null)}></button>
-        </div>
-      )}
+      </div>   
 
       {/* Sekmeler */}
       <ul className="nav nav-tabs mb-4 border-secondary">

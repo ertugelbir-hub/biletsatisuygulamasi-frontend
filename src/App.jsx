@@ -6,7 +6,8 @@ import Auth from "./components/Auth";
 import MyTickets from "./components/MyTickets";
 import AdminPanel from "./components/admin/AdminPanel"; // Admin Paneli importu
 import "bootstrap/dist/css/bootstrap.min.css";
-
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css'; // <-- CSS şart!
 function App() {
   // --- 1. STATE TANIMLARI (Hepsi En Tepede) ---
   const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem("token"));
@@ -136,7 +137,9 @@ function App() {
                <button onClick={handleLogout} className="btn btn-outline-danger">
                  Çıkış ({localStorage.getItem("username")})
                </button>
+               
             </div>
+            
           )}
         </div>
 
@@ -144,6 +147,12 @@ function App() {
         {content}
 
       </div>
+      {/* 👇 EN ALTA BUNU EKLE 👇 */}
+    <ToastContainer 
+       position="top-right" 
+       autoClose={3000} 
+       theme="dark" 
+    />
     </div>
   );
 }

@@ -1,11 +1,9 @@
 import { useState } from "react";
 import TicketModal from "./TicketModal"; // Yeni yaptığımız modalı çağırdık
 import apiClient from "../apiClient";
-
+import { toast } from 'react-toastify';
 function EventDetail({ event, onBack }) {
-  const [showModal, setShowModal] = useState(false); // Modal açık mı kapalı mı?
-  const [message, setMessage] = useState(null); // Başarılı/Hatalı mesajı için
-
+  const [showModal, setShowModal] = useState(false); // Modal açık mı kapalı mı?  
   if (!event) return null;
 
   // Modal'dan "Onayla" gelince çalışacak fonksiyon
@@ -20,27 +18,19 @@ function EventDetail({ event, onBack }) {
       await apiClient.post("/api/tickets/purchase", requestBody); // Senin endpointin /purchase idi
 
       setShowModal(false);
-      setMessage({ type: "success", text: "🎉 Bilet başarıyla satın alındı!" });
+      toast.success("🎉 Bilet başarıyla satın alındı! İyi eğlenceler.");
 
     } catch (error) {
       console.error("Satın alma hatası:", error);
       const errorMsg = error.response?.data?.message || "Satın alma işlemi başarısız oldu.";
-      setMessage({ type: "danger", text: `❌ Hata: ${errorMsg}` });
+      toast.error(`❌ Hata: ${errorMsg}`);
       setShowModal(false);
     }
   };
 
   return (
-    <div className="text-light mt-4">
-      
-      {/* Mesaj Kutusu (Varsa göster) */}
-      {message && (
-        <div className={`alert alert-${message.type} alert-dismissible fade show`} role="alert">
-          {message.text}
-          <button type="button" className="btn-close" onClick={() => setMessage(null)}></button>
-        </div>
-      )}
-
+    <div className="text-light mt-4">    
+    
       {/* Geri Dön Butonu */}
       <button onClick={onBack} className="btn btn-outline-secondary mb-4">
         ← Listeye Dön
