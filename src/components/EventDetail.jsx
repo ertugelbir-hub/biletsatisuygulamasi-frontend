@@ -9,21 +9,17 @@ function EventDetail({ event, onBack }) {
   if (!event) return null;
 
   // Modal'dan "Onayla" gelince çalışacak fonksiyon
-  const handlePurchase = async (quantity, customerName) => {
+  const handlePurchase = async (quantity) => { // <-- Artık sadece quantity alıyor
     try {
-      // Backend'e gidecek veri (Senin backend DTO yapına göre burası değişebilir)
       const requestBody = {
         eventId: event.id,
-        quantity: quantity,
-        customerName: customerName // Eğer backend istemiyorsa bunu silebilirsin
+        quantity: quantity
+        // customerName sildik, backend zaten token'dan alıyor
       };
 
-      // Backend'e POST isteği atıyoruz
-      // Backend endpointin muhtemelen '/api/tickets' şeklindedir. Kontrol et.
-      await apiClient.post("/api/tickets/purchase", requestBody);
+      await apiClient.post("/api/tickets/purchase", requestBody); // Senin endpointin /purchase idi
 
-      // Başarılı olursa
-      setShowModal(false); // Modalı kapat
+      setShowModal(false);
       setMessage({ type: "success", text: "🎉 Bilet başarıyla satın alındı!" });
 
     } catch (error) {
