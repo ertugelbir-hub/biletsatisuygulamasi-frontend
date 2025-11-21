@@ -45,7 +45,7 @@ function App() {
   async function loadEvents(filters = {}, pageNum = 0) {
     try {
       setLoading(true);
-      
+      await new Promise(r => setTimeout(r, 2000));
      // Backend'deki 'search' endpoint'i hem filtreleme hem sayfalama yapar
       // Parametreleri hazırlıyoruz
       const params = {
@@ -117,7 +117,15 @@ function App() {
     // Biletlerim Sayfası
     content = <MyTickets onBack={() => setShowMyTickets(false)} />;
   } else if (loading) {
-    content = <div className="text-center mt-5 text-white">Yükleniyor...</div>;
+    content = (
+      <div className="d-flex flex-column justify-content-center align-items-center mt-5">
+        {/* Bootstrap Spinner */}
+        <div className="spinner-border text-info" style={{ width: "3rem", height: "3rem" }} role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
+        <p className="mt-3 text-light fs-5">Yükleniyor...</p>
+      </div>
+    );  
   } else if (error) {
     content = <div className="alert alert-danger mt-5">{error}</div>;
   } else if (selectedEvent) {

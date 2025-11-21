@@ -9,10 +9,11 @@ function Auth({ onLoginSuccess }) {
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState(""); // Sadece kayıt için
   const [error, setError] = useState("");
-
+  const [loading, setLoading] = useState(false);
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setLoading(true);
 
     // Backend Endpointlerini kontrol et (Controller yapına göre)
    const endpoint = isLogin ? "/api/auth/login" : "/api/auth/register";
@@ -39,11 +40,14 @@ function Auth({ onLoginSuccess }) {
       } else {
         // KAYIT BAŞARILI: Giriş ekranına dön
         toast.success("✅ Kayıt başarılı! Şimdi giriş yapabilirsin.");
-        setIsLogin(true);
+        setIsLogin(true);   
+        setLoading(false);     
       }
+      if (!isLogin) setLoading(false);
     } catch (err) {
       console.error(err);
       toast.error("❌ İşlem başarısız! Bilgileri kontrol et.");
+      setLoading(false);
     }
   };
 
@@ -90,9 +94,16 @@ function Auth({ onLoginSuccess }) {
             />
           </div>
 
-          <button type="submit" className="btn btn-primary w-100 py-2 fw-bold">
-            {isLogin ? "Giriş Yap" : "Kayıt Ol"}
-          </button>
+          <button type="submit" className="btn btn-primary w-100 py-2 fw-bold" disabled={loading} >
+            {loading ? (
+          <>
+            <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+            İşleniyor...
+          </>
+        ) : (
+          isLogin ? "Giriş Yap" : "Kayıt Ol"
+        )}
+      </button>
         </form>
 
         <div className="text-center mt-3">

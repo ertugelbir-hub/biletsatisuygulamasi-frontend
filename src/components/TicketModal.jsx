@@ -2,11 +2,14 @@ import { useState } from "react";
 
 function TicketModal({ event, onClose, onConfirm }) {
   const [quantity, setQuantity] = useState(1);
+  const [isProcessing, setIsProcessing] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     // Sadece adedi gönderiyoruz, isim zaten tokenda var
-    onConfirm(quantity);
+    setIsProcessing(true);
+    await onConfirm(quantity);
+    setIsProcessing(false);
   };
 
   return (
@@ -43,8 +46,17 @@ function TicketModal({ event, onClose, onConfirm }) {
             </div>
 
             <div className="modal-footer border-secondary">
-              <button type="button" className="btn btn-secondary" onClick={onClose}>Vazgeç</button>
-              <button type="submit" className="btn btn-success">Onayla ve Satın Al</button>
+              <button type="button" className="btn btn-secondary" onClick={onClose} disabled={isProcessing} >Vazgeç</button>
+              <button type="submit" className="btn btn-success" disabled={isProcessing} >
+              {isProcessing ? (
+              <>
+              <span className="spinner-border spinner-border-sm me-2"></span>
+             Ödeme Yapılıyor...
+             </>
+             ) : (
+              "Onayla ve Satın Al"
+            )}
+            </button>       
             </div>
           </form>
 
