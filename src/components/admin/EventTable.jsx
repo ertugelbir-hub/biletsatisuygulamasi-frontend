@@ -1,6 +1,6 @@
 import React from 'react';
 
-function EventTable({ events, onEdit, onDelete }) {
+function EventTable({ events, onEdit, onDelete, onAnalyze }) {
   return (
     <div className="table-responsive">
       <table className="table table-dark table-hover border-secondary">
@@ -23,6 +23,13 @@ function EventTable({ events, onEdit, onDelete }) {
               <td>{new Date(event.dateTime).toLocaleDateString()}</td>
               <td>{event.price} ₺</td>
               <td className="text-end">
+                <button 
+                    className="btn btn-sm btn-outline-info me-2"
+                    title="Analiz Et"
+                    onClick={() => onAnalyze(event.id)}
+                >
+                    📈
+                </button>
                 <button 
                     className="btn btn-sm btn-outline-warning me-2"
                     onClick={() => onEdit(event)}

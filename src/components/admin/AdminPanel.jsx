@@ -6,10 +6,12 @@ import SalesReports from './SalesReports';
 import TicketManager from './TicketManager';
 import UserManager from './UserManager';
 import { toast } from 'react-toastify';
+import EventAnalysisModal from './EventAnalysisModal';
 function AdminPanel({ onBack }) {
   const [activeTab, setActiveTab] = useState("list");
   const [events, setEvents] = useState([]);  
   const [editingEvent, setEditingEvent] = useState(null); // Düzenlenecek veri
+  const [analysisId, setAnalysisId] = useState(null); // Hangi etkinlik analiz ediliyor?
 
   // --- API İŞLEMLERİ ---
   const fetchEvents = async () => {
@@ -118,7 +120,8 @@ function AdminPanel({ onBack }) {
              setEditingEvent(event);
              setActiveTab("form");
           }} 
-        />
+          onAnalyze={(id) => setAnalysisId(id)}
+        />        
       ) : activeTab === "form" ? (
         <EventForm 
           initialData={editingEvent} 
@@ -133,7 +136,14 @@ function AdminPanel({ onBack }) {
      <UserManager />      // <--- YENİ
   )
       }
-    </div>
+      {/* ANALİZ MODALI (Listenin dışında, en altta durmalı) */}
+      {analysisId && (
+        <EventAnalysisModal 
+          eventId={analysisId} 
+          onClose={() => setAnalysisId(null)} 
+        />   
+      )}
+        </div>
   );
 }
 
