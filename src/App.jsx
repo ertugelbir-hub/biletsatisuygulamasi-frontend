@@ -15,6 +15,11 @@ function App() {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  // Sayfalama State'leri (YENİ)
+  const [page, setPage] = useState(0); // Şu anki sayfa (0'dan başlar)
+  const [totalPages, setTotalPages] = useState(0); // Toplam sayfa sayısı
+  const [currentFilters, setCurrentFilters] = useState({}); // Aktif filtreleri tutalım
   
   // Sayfa Yönlendirme State'leri
   const [selectedEvent, setSelectedEvent] = useState(null);
@@ -34,30 +39,33 @@ function App() {
   }, [isAuthenticated]);
 
   // --- 3. YARDIMCI FONKSİYONLAR ---
- // searchParams isteğe bağlıdır, boş gelirse tümünü çeker
-  async function loadEvents(searchParams = {}) {
+ // Hem filtreleri hem de sayfa numarasını yönetir
+  async function loadEvents(filters = {}, pageNum = 0) {
     try {
       setLoading(true);
       
-      let url = "/api/events";
-      let config = {};
-
-      // Boş olmayan filtreleri ayıkla (Temizlik)
-      const cleanParams = {};
-      if (searchParams.q && searchParams.q.trim() !== "") cleanParams.q = searchParams.q;
-      if (searchParams.city && searchParams.city !== "") cleanParams.city = searchParams.city;
-      if (searchParams.type && searchParams.type !== "") cleanParams.type = searchParams.type;
-
-      // Eğer en az 1 filtre varsa arama moduna geç
-      if (Object.keys(cleanParams).length > 0) {
-        url = "/api/events/search";
-        config = { params: cleanParams };
-      }
-
-      const response = await apiClient.get(url, config);
-      const data = response.data;
+     // Backend'deki 'search' endpoint'i hem filtreleme hem sayfalama yapar
+      // Parametreleri hazırlıyoruz
+      const params = {
+        page: pageNum,
+        size: 6, // Her sayfada 6 etkinlik (3x2 ızgara için ideal)
+        sort: "dateTime",
+        dir: "asc",
+        ...filters // Gelen filtreleri (şehir, tür vb.) ekle
+      };
       
-      setEvents(Array.isArray(data.content) ? data.content : (Array.isArray(data) ? data : []));
+     // Temizlik: Boş string olan filtreleri gönderme
+      if (!params.q) delete params.q;
+      if (!params.city) delete params.city;
+      if (!params.type) delete params.type;
+
+      const response = await apiClient.get("/api/events/search", { params });
+      const data = response.data; // Spring Page yapısı döner
+      
+      setEvents(data.content); // Liste 'content' içindedir
+      setTotalPages(data.totalPages); // Toplam sayfa sayısı
+      setPage(data.number); // Güncel sayfa numarası
+      setCurrentFilters(filters); // Filtreleri hafızada tut (sayfa değişince lazım olacak)
       setError("");
     } catch (e) {
       console.error(e);
@@ -70,12 +78,19 @@ function App() {
       setLoading(false);
     }
   }
+// Sayfa Değiştirme Butonuna Basınca
+  const handlePageChange = (newPage) => {
+    if (newPage >= 0 && newPage < totalPages) {
+      loadEvents(currentFilters, newPage); // Filtreleri koru, sayfayı değiştir
+      window.scrollTo(0, 0); // Sayfanın tepesine çık
+    }
+  };
 
   const handleLogout = () => {
     // Temizlik İşlemi
     localStorage.removeItem("token");
     localStorage.removeItem("username");
-    localStorage.removeItem("role"); // Rolü de siliyoruz
+    localStorage.removeItem("role"); 
 
     // State'leri Sıfırla
     setIsAuthenticated(false);
@@ -105,8 +120,37 @@ function App() {
     content = <EventDetail event={selectedEvent} onBack={() => setSelectedEvent(null)} />;
   } else {
     // Varsayılan: Liste
-    content = <EventList events={events} onEventSelect={(event) => setSelectedEvent(event)} />;
+    content = (
+      <>
+      <EventList events={events} onEventSelect={(event) => setSelectedEvent(event)} />;
+    {/* SAYFALAMA BUTONLARI (Sadece birden fazla sayfa varsa göster) */}
+    {totalPages > 1 && (
+          <div className="d-flex justify-content-center align-items-center mt-5 gap-3">
+            <button 
+              className="btn btn-outline-secondary" 
+              disabled={page === 0}
+              onClick={() => handlePageChange(page - 1)}
+            >
+              ← Önceki
+            </button>
+            
+            <span className="text-white fw-bold">
+              Sayfa {page + 1} / {totalPages}
+            </span>
+            
+            <button 
+              className="btn btn-outline-secondary" 
+              disabled={page === totalPages - 1}
+              onClick={() => handlePageChange(page + 1)}
+            >
+              Sonraki →
+            </button>
+          </div>
+        )}
+      </>
+    );
   }
+  
 
   // --- 5. GÖRÜNÜM (RETURN) ---
 return (
@@ -119,6 +163,7 @@ return (
               setSelectedEvent(null); 
               setShowMyTickets(false);
               setShowAdmin(false);
+              loadEvents({}, 0); // Ana sayfaya dönünce sıfırla
             }}>
             <h1 className="h2 fw-bold text-white mb-0">🎟️ Bilet Satış</h1>
           </div>
@@ -128,51 +173,23 @@ return (
                {/* Admin Butonu */}
                {userRole === 'ADMIN' && (
                  <button 
-                   className={`btn ${showAdmin ? 'btn-danger' : 'btn-outline-danger'}`}
-                   onClick={() => {
-                      setShowAdmin(true);
-                      setShowMyTickets(false);
-                      setSelectedEvent(null);
-                   }}
-                 >
-                   Yönetici Paneli
-                 </button>
-               )}
-               {/* Biletlerim Butonu */}
-               <button 
-                 className={`btn ${showMyTickets ? 'btn-warning' : 'btn-outline-warning'}`}
-                 onClick={() => {
-                    setShowMyTickets(true); 
-                    setSelectedEvent(null);
-                    setShowAdmin(false);
-                 }}
-               >
-                 Biletlerim
-               </button>
-               {/* Çıkış Butonu */}
-               <button onClick={handleLogout} className="btn btn-outline-danger">
-                 Çıkış ({localStorage.getItem("username")})
-               </button>
+                   className={`btn ${showAdmin ? 'btn-danger' : 'btn-outline-danger'}`} onClick={() => { setShowAdmin(true); setShowMyTickets(false); setSelectedEvent(null); }}>Yönetici Paneli</button>
+                   )}                                    
+               <button className={`btn ${showMyTickets ? 'btn-warning' : 'btn-outline-warning'}`} onClick={() => { setShowMyTickets(true); setSelectedEvent(null); setShowAdmin(false); }}>Biletlerim</button>
+               <button onClick={handleLogout} className="btn btn-outline-danger">Çıkış ({localStorage.getItem("username")})</button>
             </div>
           )}
         </div>
 
-        {/* --- 2. ARAMA ÇUBUĞU (SADECE ANA SAYFADA) --- */}
-        {isAuthenticated && !selectedEvent && !showMyTickets && !showAdmin &&(
-           <SearchBar onSearch={(filters) => loadEvents(filters)} />
+        {isAuthenticated && !selectedEvent && !showMyTickets && !showAdmin && (
+           // Arama yapınca her zaman 0. sayfadan başlat
+           <SearchBar onSearch={(filters) => loadEvents(filters, 0)} />
         )}
 
-        {/* --- 3. ANA İÇERİK --- */}
         {content}
 
       </div>
-
-      {/* --- 4. BİLDİRİMLER --- */}
-      <ToastContainer 
-         position="top-right" 
-         autoClose={3000} 
-         theme="dark" 
-      />
+      <ToastContainer position="top-right" autoClose={3000} theme="dark" />
     </div>
   );
 }
