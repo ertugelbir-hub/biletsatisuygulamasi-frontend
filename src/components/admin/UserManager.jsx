@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import apiClient from '../../apiClient';
+import UserHistoryModal from './UserHistoryModal';
 
 function UserManager() {
   const [users, setUsers] = useState([]);
-
+  const [selectedUser, setSelectedUser] = useState(null);
   useEffect(() => {
     apiClient.get("/api/users")
       .then(res => setUsers(res.data))
@@ -20,6 +21,7 @@ function UserManager() {
             <th>Kullanıcı Adı</th>
             <th>Email</th>
             <th>Rol</th>
+            <th className="text-end">İşlemler</th>
           </tr>
         </thead>
         <tbody>
@@ -33,10 +35,24 @@ function UserManager() {
                   {u.role}
                 </span>
               </td>
+              <td className="text-end">{/* GEÇMİŞ BUTONU */}
+                <button 
+                  className="btn btn-sm btn-outline-info"
+                  onClick={() => setSelectedUser(u.username)}>
+                  📜 Geçmiş
+                </button>
+              </td>
             </tr>
           ))}
         </tbody>
       </table>
+      {/* MODAL: Eğer bir kullanıcı seçildiyse göster */}
+      {selectedUser && (
+        <UserHistoryModal 
+          username={selectedUser} 
+          onClose={() => setSelectedUser(null)} 
+        />
+      )}
     </div>
   );
 }
