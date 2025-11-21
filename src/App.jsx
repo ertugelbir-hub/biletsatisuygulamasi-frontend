@@ -9,13 +9,14 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css'; // <-- CSS şart!
 import SearchBar from "./components/SearchBar";
+import Profile from "./components/Profile";
 function App() {
   // --- 1. STATE TANIMLARI (Hepsi En Tepede) ---
   const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem("token"));
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-
+  
   // Sayfalama State'leri (YENİ)
   const [page, setPage] = useState(0); // Şu anki sayfa (0'dan başlar)
   const [totalPages, setTotalPages] = useState(0); // Toplam sayfa sayısı
@@ -25,6 +26,7 @@ function App() {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [showMyTickets, setShowMyTickets] = useState(false);
   const [showAdmin, setShowAdmin] = useState(false); // Admin paneli açık mı?
+  const [showProfile, setShowProfile] = useState(false);
   
   // Kullanıcı Rolü
   const userRole = localStorage.getItem("role"); // ADMIN mi USER mı?
@@ -90,7 +92,7 @@ function App() {
     // Temizlik İşlemi
     localStorage.removeItem("token");
     localStorage.removeItem("username");
-    localStorage.removeItem("role"); 
+    localStorage.removeItem("role");     
 
     // State'leri Sıfırla
     setIsAuthenticated(false);
@@ -98,6 +100,7 @@ function App() {
     setShowMyTickets(false);
     setShowAdmin(false); // Admin panelini kapat
     setEvents([]);
+    setShowProfile(false);
   };
 
   // --- 4. İÇERİK YÖNETİMİ (Sıralama Önemli) ---
@@ -108,6 +111,8 @@ function App() {
   } else if (showAdmin) {
     // Admin Paneli (En öncelikli)
     content = <AdminPanel onBack={() => setShowAdmin(false)} />;
+  } else if (showProfile) {  
+  content = <Profile onBack={() => setShowProfile(false)} />;
   } else if (showMyTickets) {
     // Biletlerim Sayfası
     content = <MyTickets onBack={() => setShowMyTickets(false)} />;
@@ -176,6 +181,18 @@ return (
                    className={`btn ${showAdmin ? 'btn-danger' : 'btn-outline-danger'}`} onClick={() => { setShowAdmin(true); setShowMyTickets(false); setSelectedEvent(null); }}>Yönetici Paneli</button>
                    )}                                    
                <button className={`btn ${showMyTickets ? 'btn-warning' : 'btn-outline-warning'}`} onClick={() => { setShowMyTickets(true); setSelectedEvent(null); setShowAdmin(false); }}>Biletlerim</button>
+               {/* PROFİL BUTONU (İSİM) */}
+               <button 
+                 className={`btn ${showProfile ? 'btn-info' : 'btn-outline-info'}`}
+                 onClick={() => {
+                    setShowProfile(true);
+                    setShowMyTickets(false);
+                    setSelectedEvent(null);
+                    setShowAdmin(false);
+                 }}
+               >
+                 👤 {localStorage.getItem("username")}
+               </button>
                <button onClick={handleLogout} className="btn btn-outline-danger">Çıkış ({localStorage.getItem("username")})</button>
             </div>
           )}
