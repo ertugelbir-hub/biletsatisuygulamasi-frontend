@@ -1,66 +1,152 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 function TicketModal({ event, onClose, onConfirm }) {
-  const [quantity, setQuantity] = useState(1);
+  // Seçilen koltukların ID'lerini tutuyoruz
+  const [selectedSeats, setSelectedSeats] = useState([]);
   const [isProcessing, setIsProcessing] = useState(false);
+  
+  // Rastgele dolu koltuklar üretelim (Simülasyon)
+  // Gerçek hayatta bu backend'den gelirdi
+  const [occupiedSeats, setOccupiedSeats] = useState([]);
+
+  useEffect(() => {
+    // Sayfa açılınca rastgele 5-10 koltuğu "Dolu" işaretle
+    const randomOccupied = [];
+    const totalSeats = 40; // Ekrana 40 koltuk çizeceğiz
+    for(let i=0; i<totalSeats; i++) {
+      if(Math.random() < 0.3) { // %30 ihtimalle dolu olsun
+        randomOccupied.push(i);
+      }
+    }
+    setOccupiedSeats(randomOccupied);
+  }, []);
+
+  const toggleSeat = (index) => {
+    if (occupiedSeats.includes(index)) return; // Doluysa işlem yapma
+
+    if (selectedSeats.includes(index)) {
+      // Zaten seçiliyse çıkar
+      setSelectedSeats(selectedSeats.filter(id => id !== index));
+    } else {
+      // Seçili değilse ekle (Maksimum 10 bilet sınırı koyalım)
+      if (selectedSeats.length < 10) {
+        setSelectedSeats([...selectedSeats, index]);
+      }
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // Sadece adedi gönderiyoruz, isim zaten tokenda var
+    if (selectedSeats.length === 0) return;
+
     setIsProcessing(true);
-    await new Promise(resolve => setTimeout(resolve, 2000));//test için
-    await onConfirm(quantity);
+    await new Promise(resolve => setTimeout(resolve, 1500)); // Yapay gecikme
+    
+    // Seçilen koltuk sayısını gönderiyoruz
+    await onConfirm(selectedSeats.length);
+    
     setIsProcessing(false);
   };
 
+  // Toplam Tutar
+  const totalPrice = event.price * selectedSeats.length;
+
   return (
-    <div className="modal show d-block" style={{ backgroundColor: "rgba(0,0,0,0.7)" }}>
+    <div className="modal show d-block" style={{ backgroundColor: "rgba(0,0,0,0.8)" }}>
       <div className="modal-dialog modal-dialog-centered">
         <div className="modal-content bg-dark text-white border-secondary">
           
           <div className="modal-header border-secondary">
-            <h5 className="modal-title">Bilet Satın Al: {event.title}</h5>
+            <div>
+                <h5 className="modal-title">Koltuk Seçimi</h5>
+                <small className="text-secondary">{event.title}</small>
+            </div>
             <button type="button" className="btn-close btn-close-white" onClick={onClose}></button>
           </div>
 
-          <form onSubmit={handleSubmit}>
-            <div className="modal-body">
-              
-              {/* GEREKSİZ İSİM ALANI SİLİNDİ */}
-              
-              <div className="mb-3">
-                <label className="form-label">Bilet Adedi</label>
-                <input 
-                  type="number" 
-                  min="1" 
-                  max="10" 
-                  className="form-control bg-secondary text-white border-0" 
-                  value={quantity}
-                  onChange={(e) => setQuantity(parseInt(e.target.value))}
-                />
-                <div className="form-text text-light mt-2">
-                  Birim Fiyat: {event.price}₺ <br/>
-                  <strong>Toplam Tutar: <span className="text-warning">{event.price * quantity}₺</span></strong>
+          <div className="modal-body text-center">
+            {/* SAHNE GÖRSELİ */}
+            <div className="mb-4 w-100 bg-secondary rounded-pill py-1 text-dark fw-bold" style={{ opacity: 0.5 }}>
+                SAHNE
+            </div>
+
+            {/* KOLTUK HARİTASI (GRID) */}
+            <div className="d-flex flex-wrap justify-content-center gap-2 mb-4" style={{ maxWidth: '300px', margin: '0 auto' }}>
+                {Array.from({ length: 40 }).map((_, index) => {
+                    const isOccupied = occupiedSeats.includes(index);
+                    const isSelected = selectedSeats.includes(index);
+                    
+                    let bgColor = "bg-outline-secondary"; // Boş
+                    let cursor = "pointer";
+                    
+                    if (isOccupied) {
+                        bgColor = "bg-danger opacity-50"; // Dolu (Kırmızı)
+                        cursor = "not-allowed";
+                    } else if (isSelected) {
+                        bgColor = "bg-success"; // Seçili (Yeşil)
+                    } else {
+                        bgColor = "bg-secondary"; // Boş (Gri)
+                    }
+
+                    return (
+                        <div 
+                            key={index}
+                            onClick={() => toggleSeat(index)}
+                            className={`rounded-3 ${bgColor}`}
+                            style={{ 
+                                width: '30px', 
+                                height: '30px', 
+                                cursor: cursor,
+                                transition: 'all 0.2s',
+                                border: isSelected ? '2px solid white' : 'none'
+                            }}
+                            title={isOccupied ? "Dolu" : `Koltuk ${index + 1}`}
+                        />
+                    );
+                })}
+            </div>
+
+            {/* BİLGİLER */}
+            <div className="d-flex justify-content-between px-4 mb-3 text-small">
+                <div className="d-flex align-items-center gap-2">
+                    <div className="bg-secondary rounded" style={{width: 15, height: 15}}></div> Boş
                 </div>
-              </div>
-
+                <div className="d-flex align-items-center gap-2">
+                    <div className="bg-success rounded" style={{width: 15, height: 15}}></div> Seçili
+                </div>
+                <div className="d-flex align-items-center gap-2">
+                    <div className="bg-danger opacity-50 rounded" style={{width: 15, height: 15}}></div> Dolu
+                </div>
             </div>
 
-            <div className="modal-footer border-secondary">
-              <button type="button" className="btn btn-secondary" onClick={onClose} disabled={isProcessing} >Vazgeç</button>
-              <button type="submit" className="btn btn-success" disabled={isProcessing} >
-              {isProcessing ? (
-              <>
-              <span className="spinner-border spinner-border-sm me-2"></span>
-             Ödeme Yapılıyor...
-             </>
-             ) : (
-              "Onayla ve Satın Al"
-            )}
-            </button>       
-            </div>
-          </form>
+            <hr className="border-secondary"/>
 
+            <div className="d-flex justify-content-between align-items-center px-2">
+                <div className="text-start">
+                    <div className="text-secondary small">Seçilen: {selectedSeats.length} Adet</div>
+                    <div className="fs-4 fw-bold text-warning">{totalPrice} ₺</div>
+                </div>
+                
+                <div>
+                    <button type="button" className="btn btn-outline-secondary me-2" onClick={onClose} disabled={isProcessing}>
+                        İptal
+                    </button>
+                    <button 
+                        onClick={handleSubmit} 
+                        className="btn btn-success fw-bold"
+                        disabled={isProcessing || selectedSeats.length === 0}
+                    >
+                        {isProcessing ? (
+                            <>
+                                <span className="spinner-border spinner-border-sm me-2"></span>
+                                İşleniyor...
+                            </>
+                        ) : "Satın Al"}
+                    </button>
+                </div>
+            </div>
+
+          </div>
         </div>
       </div>
     </div>
