@@ -8,6 +8,7 @@ function TicketModal({ event, onClose, onConfirm }) {
     e.preventDefault();
     // Sadece adedi gönderiyoruz, isim zaten tokenda var
     setIsProcessing(true);
+    await new Promise(resolve => setTimeout(resolve, 2000));//test için
     await onConfirm(quantity);
     setIsProcessing(false);
   };

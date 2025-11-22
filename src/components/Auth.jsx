@@ -7,13 +7,14 @@ function Auth({ onLoginSuccess }) {
   const [isLogin, setIsLogin] = useState(true); // Giriş modunda mı, Kayıt modunda mı?
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [email, setEmail] = useState(""); // Sadece kayıt için
+  const [email, setEmail] = useState(""); // Sadece kayıt için  
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setLoading(true);
+    await new Promise(r => setTimeout(r, 2000));//test
 
     // Backend Endpointlerini kontrol et (Controller yapına göre)
    const endpoint = isLogin ? "/api/auth/login" : "/api/auth/register";
