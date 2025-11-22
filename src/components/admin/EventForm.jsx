@@ -2,8 +2,14 @@ import React, { useState, useEffect } from 'react';
 
 function EventForm({ initialData, onSubmit }) {
   const [formData, setFormData] = useState({
-    title: "", city: "", venue: "", type: "Concert",
-    dateTime: "", totalSeats: 100, price: 0
+    title: "", 
+    city: "", 
+    venue: "", 
+    type: "Concert",
+    dateTime: "",
+    totalSeats: 100, 
+    price: 0,
+    imageUrl: ""
   });
 
   useEffect(() => {
@@ -68,6 +74,16 @@ function EventForm({ initialData, onSubmit }) {
                         <option value="Sport">Spor</option>
                     </select>
                 </div>
+                <div className="col-md-12">
+                    <label className="form-label text-secondary small">Afiş Resmi (URL)</label>
+                    <input 
+                        type="text" name="imageUrl" 
+                        className="form-control bg-dark text-white border-secondary" 
+                        placeholder="https://ornek.com/resim.jpg (Boş bırakırsan rastgele atanır)" 
+                        value={formData.imageUrl || ""} 
+                        onChange={handleChange} 
+                    />
+                </div>
                 <div className="col-md-6">
                     <label className="form-label text-secondary small">Kapasite</label>
                     <div className="input-group">
@@ -81,6 +97,7 @@ function EventForm({ initialData, onSubmit }) {
                         <span className="input-group-text bg-secondary text-white border-0">Adet</span>
                     </div>
                 </div>
+                
                 <div className="col-md-6">
                     <label className="form-label text-secondary small">Fiyat</label>
                     <div className="input-group">

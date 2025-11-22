@@ -36,6 +36,17 @@ function EventDetail({ event, onBack }) {
       <button onClick={onBack} className="btn btn-outline-secondary mb-4">
         ← Listeye Dön
       </button>
+      
+      {event.imageUrl && (
+        <div className="mb-4 rounded-3 overflow-hidden shadow" style={{ maxHeight: "400px" }}>
+            <img 
+                src={event.imageUrl} 
+                alt={event.title} 
+                className="w-100" 
+                style={{ objectFit: "cover", objectPosition: "center" }} 
+            />
+        </div>
+      )}
 
       {/* Etkinlik Detay Kartı */}
       <div className="card bg-dark border-secondary text-light shadow-lg">

@@ -4,6 +4,14 @@ function EventItem({ event, onSelect }) {
   return (
     <div className="col-12 col-md-6 col-lg-4">
       <div className="card h-100 shadow-sm border-0" style={{ backgroundColor: "#ffffff" }}>
+        <div style={{ height: "200px", overflow: "hidden" }}>
+            <img 
+                src={event.imageUrl} 
+                alt={event.title} 
+                className="w-100 h-100" 
+                style={{ objectFit: "cover" }} 
+            />
+        </div>
         <div className="card-body d-flex flex-column text-dark">
           <h5 className="card-title fw-bold mb-2">{event.title}</h5>
           
