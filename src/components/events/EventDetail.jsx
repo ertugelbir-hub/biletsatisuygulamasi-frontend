@@ -1,9 +1,9 @@
 import { useState } from "react";
-import TicketModal from "./TicketModal"; // Yeni yaptığımız modalı çağırdık
-import apiClient from "../apiClient";
+import TicketModal from "../tickets/TicketModal"; 
+import apiClient from "../../apiClient";
 import { toast } from 'react-toastify';
 function EventDetail({ event, onBack }) {
-  const [showModal, setShowModal] = useState(false); // Modal açık mı kapalı mı?  
+  const [showModal, setShowModal] = useState(false); 
   if (!event) return null;
 
   // Modal'dan "Onayla" gelince çalışacak fonksiyon

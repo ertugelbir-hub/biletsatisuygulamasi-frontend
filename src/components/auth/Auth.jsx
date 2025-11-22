@@ -1,5 +1,5 @@
 import { useState } from "react";
-import apiClient from "../apiClient";
+import apiClient from "../../apiClient";
 import { jwtDecode } from "jwt-decode";
 import { toast } from 'react-toastify';
 

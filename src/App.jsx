@@ -1,15 +1,15 @@
 import { useEffect, useState } from "react";
 import apiClient from "./apiClient";
-import EventList from "./components/EventList";
-import EventDetail from "./components/EventDetail";
-import Auth from "./components/Auth";
-import MyTickets from "./components/MyTickets";
+import EventList from "./components/events/EventList";
+import EventDetail from "./components/events/EventDetail";
+import Auth from "./components/auth/Auth";
+import MyTickets from "./components/tickets/MyTickets";
 import AdminPanel from "./components/admin/AdminPanel"; // Admin Paneli importu
 import "bootstrap/dist/css/bootstrap.min.css";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css'; // <-- CSS şart!
-import SearchBar from "./components/SearchBar";
-import Profile from "./components/Profile";
+import SearchBar from "./components/events/SearchBar";
+import Profile from "./components/auth/Profile";
 import { RotateLoader } from "react-spinners";
 function App() {
   // --- 1. STATE TANIMLARI (Hepsi En Tepede) ---
