@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import apiClient from "../../apiClient";
 import { toast } from 'react-toastify';
+import { getErrorMessage } from "../../utils/errorHelper";
 function MyTickets({ onBack }) {
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -31,8 +32,8 @@ function MyTickets({ onBack }) {
       fetchMyTickets();
     } catch (error) {
       console.error("İptal hatası:", error);
-      const errorMsg = error.response?.data?.message || "İptal işlemi başarısız.";
-      toast.error(`❌ ${errorMsg}`);
+      const msg = getErrorMessage(error);
+      toast.error(`❌ ${msg}`);
     }
   };
 

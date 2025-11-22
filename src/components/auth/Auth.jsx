@@ -2,7 +2,7 @@ import { useState } from "react";
 import apiClient from "../../apiClient";
 import { jwtDecode } from "jwt-decode";
 import { toast } from 'react-toastify';
-
+import { getErrorMessage } from "../../utils/errorHelper";
 function Auth({ onLoginSuccess }) {
   const [isLogin, setIsLogin] = useState(true); // Giriş modunda mı, Kayıt modunda mı?
   const [username, setUsername] = useState("");
@@ -47,7 +47,8 @@ function Auth({ onLoginSuccess }) {
       if (!isLogin) setLoading(false);
     } catch (err) {
       console.error(err);
-      toast.error("❌ İşlem başarısız! Bilgileri kontrol et.");
+      const msg = getErrorMessage(err); 
+      toast.error(`❌ ${msg}`);
       setLoading(false);
     }
   };

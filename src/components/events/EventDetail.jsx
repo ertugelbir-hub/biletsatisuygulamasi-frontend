@@ -2,6 +2,7 @@ import { useState } from "react";
 import TicketModal from "../tickets/TicketModal"; 
 import apiClient from "../../apiClient";
 import { toast } from 'react-toastify';
+import { getErrorMessage } from "../../utils/errorHelper";
 function EventDetail({ event, onBack }) {
   const [showModal, setShowModal] = useState(false); 
   if (!event) return null;
@@ -23,8 +24,8 @@ function EventDetail({ event, onBack }) {
     } catch (error) {
       console.error("Satın alma hatası:", error);
       const errorMsg = error.response?.data?.message || "Satın alma işlemi başarısız oldu.";
-      toast.error(`❌ Hata: ${errorMsg}`);
-      setShowModal(false);
+      const msg = getErrorMessage(error);
+      toast.error(`❌ ${msg}`);
     }
   };
 

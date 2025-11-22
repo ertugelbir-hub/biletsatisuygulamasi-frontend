@@ -7,6 +7,7 @@ import TicketManager from './TicketManager';
 import UserManager from './UserManager';
 import { toast } from 'react-toastify';
 import EventAnalysisModal from './EventAnalysisModal';
+import { getErrorMessage } from "../../utils/errorHelper";
 function AdminPanel({ onBack }) {
   const [activeTab, setActiveTab] = useState("list");
   const [events, setEvents] = useState([]);  
@@ -41,8 +42,8 @@ function AdminPanel({ onBack }) {
       setEditingEvent(null);
       setTimeout(() => setActiveTab("list"), 1000);
     } catch (error) {
-      const errorMsg = error.response?.data?.message || "Hata oluştu.";
-      toast.error(`❌ ${errorMsg}`);
+      const msg = getErrorMessage(error);
+      toast.error(`❌ ${msg}`);
     }
   };
 
