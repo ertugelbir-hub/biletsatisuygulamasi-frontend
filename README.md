@@ -1,16 +1,44 @@
-# React + Vite
+# 🎨 Bilet Satış Uygulaması - Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Bu klasör, Bilet Satış projesinin **React (Vite)** ile geliştirilmiş kullanıcı arayüzü kodlarını içerir.
 
-Currently, two official plugins are available:
+## 🛠️ Kurulum
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Projeyi çalıştırmadan önce bilgisayarınızda **Node.js** yüklü olmalıdır.
 
-## React Compiler
+1. **Bağımlılıkları Yükle:**
+   Terminalde bu klasörün içindeyken:
+   ```bash
+   npm install
+Geliştirme Sunucusunu Başlat:
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Bash
 
-## Expanding the ESLint configuration
+npm run dev
+Uygulama varsayılan olarak http://localhost:5173 adresinde çalışır.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+📂 Klasör Yapısı
+Proje, modüler bir bileşen yapısına sahiptir:
+
+src/apiClient.js: Axios tabanlı, JWT destekli HTTP istemcisi.
+
+src/components/admin/: Yönetici paneli, raporlar, etkinlik formları.
+
+src/components/auth/: Giriş, kayıt ve profil işlemleri.
+
+src/components/events/: Etkinlik listeleme, arama ve detay sayfaları.
+
+src/components/tickets/: Bilet satın alma (koltuk seçimi) ve "Biletlerim" sayfası.
+
+src/utils/: Hata mesajlarını işleyen yardımcı fonksiyonlar.
+
+📦 Kullanılan Paketler
+Routing: React State & Conditional Rendering
+
+Stil: Bootstrap 5
+
+HTTP: Axios
+
+UI/UX: React Toastify (Bildirimler), React Spinners (Loading), React Icons
+
+Güvenlik: JWT Decode
