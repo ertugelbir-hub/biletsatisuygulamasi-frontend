@@ -11,8 +11,11 @@ import 'react-toastify/dist/ReactToastify.css'; // <-- CSS şart!
 import SearchBar from "./components/events/SearchBar";
 import Profile from "./components/auth/Profile";
 import { RotateLoader } from "react-spinners";
+import NotFound from "./components/NotFound";
 function App() {
   // --- 1. STATE TANIMLARI (Hepsi En Tepede) ---
+    // Adres çubuğu "/" değilse (örn: /admin, /abc) true olur
+  const [isNotFound, setIsNotFound] = useState(window.location.pathname !== "/");
   const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem("token"));
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -31,6 +34,7 @@ function App() {
   
   // Kullanıcı Rolü
   const userRole = localStorage.getItem("role"); // ADMIN mi USER mı?
+
 
   // --- 2. USE EFFECT ---
   useEffect(() => {
@@ -103,6 +107,19 @@ function App() {
     setEvents([]);
     setShowProfile(false);
   };
+  // Eğer sayfa bulunamadıysa, Header'ı falan gösterme, direkt bunu göster ve bitir.
+  if (isNotFound) {
+    return (
+      <>
+        <NotFound onGoHome={() => {
+           // Adresi temizle ve ana sayfaya dön
+           window.history.pushState(null, "", "/");
+           setIsNotFound(false);
+        }} />
+        <ToastContainer position="top-right" autoClose={3000} theme="dark" />
+      </>
+    );
+  }
 
   // --- 4. İÇERİK YÖNETİMİ (Sıralama Önemli) ---
   let content;
