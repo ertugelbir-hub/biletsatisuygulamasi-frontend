@@ -57,8 +57,8 @@ function App() {
         page: pageNum,
         size: 6, // Her sayfada 6 etkinlik (3x2 ızgara için ideal)
         sort: "dateTime",
-        dir: "asc",
-        ...filters // Gelen filtreleri (şehir, tür vb.) ekle
+        dir: "asc",      
+        ...filters
       };
       
      // Temizlik: Boş string olan filtreleri gönderme
@@ -68,15 +68,22 @@ function App() {
 
       const response = await apiClient.get("/api/events/search", { params });
       const data = response.data; // Spring Page yapısı döner
-      
+
+      const content = data.content ? data.content : (Array.isArray(data) ? data : []);
       setEvents(data.content); // Liste 'content' içindedir
       setTotalPages(data.totalPages); // Toplam sayfa sayısı
       setPage(data.number); // Güncel sayfa numarası
       setCurrentFilters(filters); // Filtreleri hafızada tut (sayfa değişince lazım olacak)
       setError("");
     } catch (e) {
-      console.error(e);
-      if (e.response && e.response.status === 401) {
+      console.error("Liste Hatası:", e);
+      
+      // HATA DETAYINI GÖRMEK İÇİN:
+      if (e.response && e.response.status === 400) {
+         console.error("400 Hatası Detayı:", e.response.data);
+         // Ekrana backend'den gelen mesajı basalım ki sebebi anlayalım
+         setError(e.response.data.message || "İstek hatalı (400). Backend loglarına bak.");
+      } else if (e.response && e.response.status === 401) {
          handleLogout();
       } else {
          setError("Etkinlikler yüklenirken hata oluştu.");
@@ -84,6 +91,7 @@ function App() {
     } finally {
       setLoading(false);
     }
+  
   }
 // Sayfa Değiştirme Butonuna Basınca
   const handlePageChange = (newPage) => {

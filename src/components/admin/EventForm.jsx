@@ -12,8 +12,19 @@ function EventForm({ initialData, onSubmit }) {
     imageUrl: ""
   });
 
-  useEffect(() => {
-    if (initialData) setFormData(initialData);
+ useEffect(() => {
+    if (initialData) {
+      // Backend'den gelen "2025-12-10T20:00:00" formatını
+      // inputun istediği "2025-12-10T20:00" haline (ilk 16 karakter) getiriyoruz.
+      const formattedDate = initialData.dateTime 
+        ? initialData.dateTime.substring(0, 16) 
+        : "";
+
+      setFormData({
+        ...initialData,
+        dateTime: formattedDate
+      });
+    }
   }, [initialData]);
 
   const handleChange = (e) => {
