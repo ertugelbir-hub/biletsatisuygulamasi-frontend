@@ -10,8 +10,8 @@ const apiClient = axios.create({
 // HER İSTEKTEN ÖNCE ÇALIŞACAK "KAPICI" (INTERCEPTOR)
 apiClient.interceptors.request.use(
   (config) => {
-    // Tarayıcının hafızasından token'ı al
-    const token = localStorage.getItem("token");
+   // ÖNCE localStorage'a bak, YOKSA sessionStorage'a bak
+    const token = localStorage.getItem("token") || sessionStorage.getItem("token");
     
     // Eğer token varsa, isteğin başlığına (Header) yapıştır
     if (token) {

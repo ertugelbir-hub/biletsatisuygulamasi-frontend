@@ -16,8 +16,7 @@ function App() {
   // --- 1. STATE TANIMLARI (Hepsi En Tepede) ---
     // Adres çubuğu "/" değilse (örn: /admin, /abc) true olur
   const [isNotFound, setIsNotFound] = useState(window.location.pathname !== "/");
-  const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem("token"));
-  const [events, setEvents] = useState([]);
+  const [isAuthenticated, setIsAuthenticated] = useState(!!(localStorage.getItem("token") || sessionStorage.getItem("token")));
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   
@@ -28,12 +27,13 @@ function App() {
   
   // Sayfa Yönlendirme State'leri
   const [selectedEvent, setSelectedEvent] = useState(null);
+  const [events, setEvents] = useState([]);
   const [showMyTickets, setShowMyTickets] = useState(false);
   const [showAdmin, setShowAdmin] = useState(false); // Admin paneli açık mı?
   const [showProfile, setShowProfile] = useState(false);
   
   // Kullanıcı Rolü
-  const userRole = localStorage.getItem("role"); // ADMIN mi USER mı?
+ const userRole = localStorage.getItem("role") || sessionStorage.getItem("role");
 
 
   // --- 2. USE EFFECT ---
@@ -59,6 +59,7 @@ function App() {
         sort: "dateTime",
         dir: "asc",      
         ...filters
+        
       };
       
      // Temizlik: Boş string olan filtreleri gönderme
@@ -224,9 +225,9 @@ return (
                     setShowAdmin(false);
                  }}
                >
-                 👤 {localStorage.getItem("username")}
+                 👤 {localStorage.getItem("username") || sessionStorage.getItem("username")}
                </button>
-               <button onClick={handleLogout} className="btn btn-outline-danger">Çıkış ({localStorage.getItem("username")})</button>
+               <button onClick={handleLogout} className="btn btn-outline-danger">Çıkış ({localStorage.getItem("username") || sessionStorage.getItem("username")})</button>
             </div>
           )}
         </div>

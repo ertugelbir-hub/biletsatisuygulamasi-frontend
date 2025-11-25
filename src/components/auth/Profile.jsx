@@ -3,8 +3,8 @@ import apiClient from '../../apiClient'; // Yola dikkat et (../../)
 import { toast } from 'react-toastify';
 
 function Profile({ onBack }) {
-  const username = localStorage.getItem("username");
-  const role = localStorage.getItem("role");
+  const username = localStorage.getItem("username") || sessionStorage.getItem("username");
+  const role = localStorage.getItem("role") || sessionStorage.getItem("role");
 
   // Şifre State'leri
   const [passwords, setPasswords] = useState({

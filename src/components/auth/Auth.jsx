@@ -10,6 +10,7 @@ function Auth({ onLoginSuccess }) {
   const [email, setEmail] = useState(""); // Sadece kayıt için  
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -25,17 +26,42 @@ function Auth({ onLoginSuccess }) {
 
     try {
       const response = await apiClient.post(endpoint, payload);
+      console.log("Backend Cevabı:", response); // <--- LOG 1
 
       if (isLogin) {
         // GİRİŞ BAŞARILI: Token'ı kaydet
         // Backend'den dönen yapın { token: "..." } ise:
         const token = response.data.token || response.data; // String dönerse direkt al
-        // YENİ KISIM: Token'ı çöz ve rolü al
-        const decoded = jwtDecode(token); 
-        const userRole = decoded.role; // Backend'de "role" diye kaydetmiştik
-        localStorage.setItem("token", token);
-        localStorage.setItem("username", username);
-        localStorage.setItem("role", userRole); // <-- ROLÜ KAYDETTİK
+        console.log("Gelen Token:", token); // <--- LOG 2
+        // YENİ KISIM: Token'ı çöz ve rolü al,
+        if (!token) {
+            throw new Error("Backend'den Token gelmedi!");
+        }
+        let userRole = "USER";
+       try {
+            const decoded = jwtDecode(token);
+            console.log("Çözülen Token:", decoded); // <--- LOG 3
+            
+            if (decoded.role) {
+                userRole = decoded.role || "USER";
+            }
+            
+            } catch (decodeError) {
+            console.error("Token çözülemedi:", decodeError);
+            // Token çözülemezse bile akışı bozmayalım, varsayılan role ile devam edelim
+        }
+        
+        if (rememberMe) {
+            // Kalıcı Hafıza (Beni Hatırla SEÇİLİ)
+            localStorage.setItem("token", token);
+            localStorage.setItem("username", username);
+            localStorage.setItem("role", userRole);
+        } else {
+            // Geçici Hafıza (Beni Hatırla SEÇİLİ DEĞİL)
+            sessionStorage.setItem("token", token);
+            sessionStorage.setItem("username", username);
+            sessionStorage.setItem("role", userRole);
+        }
         toast.success("👋 Hoşgeldin " + username);
         onLoginSuccess(); // App.jsx'e haber ver
       } else {
@@ -46,9 +72,14 @@ function Auth({ onLoginSuccess }) {
       }
       if (!isLogin) setLoading(false);
     } catch (err) {
-      console.error(err);
+      
+      console.error("LOGIN HATASI DETAYI:", err); // <--- LOG 4 (Gerçek hatayı burada göreceğiz)
+      if (!err.response) {
+          setError("Uygulama hatası: " + err.message);
+      }else{
       const msg = getErrorMessage(err); 
       toast.error(`❌ ${msg}`);
+    }
       setLoading(false);
     }
   };
@@ -95,6 +126,20 @@ function Auth({ onLoginSuccess }) {
               required 
             />
           </div>
+          {isLogin && (
+            <div className="mb-3 form-check">
+                <input 
+                    type="checkbox" 
+                    className="form-check-input" 
+                    id="rememberMe"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                />
+                <label className="form-check-label text-secondary" htmlFor="rememberMe">
+                    Beni Hatırla
+                </label>
+            </div>
+          )}
 
           <button type="submit" className="btn btn-primary w-100 py-2 fw-bold" disabled={loading} >
             {loading ? (
