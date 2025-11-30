@@ -12,6 +12,9 @@ import SearchBar from "./components/events/SearchBar";
 import Profile from "./components/auth/Profile";
 import { RotateLoader } from "react-spinners";
 import NotFound from "./components/NotFound";
+import SockJS from 'sockjs-client';
+import { Stomp } from '@stomp/stompjs';
+
 function App() {
   // --- 1. STATE TANIMLARI (Hepsi En Tepede) ---
     // Adres çubuğu "/" değilse (örn: /admin, /abc) true olur
@@ -45,6 +48,61 @@ function App() {
     }
   }, [isAuthenticated]);
 
+  //Websocket
+useEffect(() => {
+    // Sadece giriş yapmış kullanıcılar dinlesin
+    if (!isAuthenticated) return;
+
+    let stompClient = null;
+
+    const connectWebSocket = () => {
+        // Backend'e bağlan
+        const socket = new SockJS('http://localhost:8080/ws-ticket');
+        stompClient = Stomp.over(socket);
+        
+        // Konsol kirliliğini önlemek için logları kapat (isteğe bağlı)
+        stompClient.debug = (str) => { console.log(str); };
+
+        stompClient.connect({}, () => {
+            // '/topic/sales' kanalını dinle
+            stompClient.subscribe('/topic/sales', (message) => {
+                try {
+                    const eventData = JSON.parse(message.body);
+                    
+                    // BİLDİRİMİ FIRLAT 🚀
+                    toast.info(
+                        <div>
+                           <strong>🔥 CANLI SATIŞ!</strong><br/>
+                           "{eventData.eventTitle}" etkinliği için bilet satıldı!<br/>
+                           <small>Kalan Stok: {eventData.remainingSeats}</small>
+                        </div>
+                    , {
+                        position: "top-right",
+                        autoClose: 5000,
+                        hideProgressBar: false,
+                        closeOnClick: true,
+                        pauseOnHover: true,
+                        draggable: true,
+                        theme: "dark",
+                    });
+
+                } catch (err) {
+                    console.error("Mesaj okuma hatası:", err);
+                }
+            });
+        }, (err) => {
+            console.error("WebSocket Bağlantı Hatası:", err);
+        });
+    };
+
+    connectWebSocket();
+
+    // Temizlik: Sayfadan çıkınca bağlantıyı kes
+    return () => {
+        if (stompClient) stompClient.disconnect();
+    };
+
+  }, [isAuthenticated]);
   // --- 3. YARDIMCI FONKSİYONLAR ---
  // Hem filtreleri hem de sayfa numarasını yönetir
   async function loadEvents(filters = {}, pageNum = 0) {
