@@ -89,13 +89,12 @@ function EventDetail({ event, onBack,liveData }) {
         ← Listeye Dön
       </button>
       
-      {event.imageUrl && (
-        <div className="mb-4 rounded-3 overflow-hidden shadow" style={{ maxHeight: "400px" }}>
+     {event.imageUrl && (
+        <div className="mb-4">
             <img 
                 src={event.imageUrl} 
                 alt={event.title} 
-                className="w-100" 
-                style={{ objectFit: "cover", objectPosition: "center" }} 
+                className="event-detail-banner"
             />
         </div>
       )}

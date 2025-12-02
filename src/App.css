@@ -87,3 +87,29 @@
   font-weight: bold;
   display: inline-block;
 }
+/* --- RESİM DÜZENLEMELERİ --- */
+
+/* Liste Sayfası (Kartlar) İçin */
+.card-img-top-custom {
+  width: 100%;
+  height: 220px; /* Sabit yükseklik */
+  object-fit: cover; /* Resmi sündürmeden kutuyu doldur */
+  object-position: top center; /* Resmin üst tarafına odaklan (kafalar kesilmesin) */
+  transition: transform 0.3s ease;
+}
+
+/* Detay Sayfası (Banner) İçin */
+.event-detail-banner {
+  width: 100%;
+  height: 400px; /* Banner yüksekliği */
+  object-fit: cover; /* Kutuyu tam doldur */
+  object-position: center center; /* Ortadan biraz yukarıya odaklan */
+  display: block;
+  border-radius: 12px; /* Köşeleri yuvarla */
+  box-shadow: 0 4px 15px rgba(0,0,0,0.5); /* Hafif gölge */
+}
+
+/* Kartın üzerine gelince resim hafif büyüsün (Hoş bir efekt) */
+.card:hover .card-img-top-custom {
+  transform: scale(1.05);
+}
