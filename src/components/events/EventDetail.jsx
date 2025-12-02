@@ -1,10 +1,61 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import TicketModal from "../tickets/TicketModal"; 
 import apiClient from "../../apiClient";
 import { toast } from 'react-toastify';
 import { getErrorMessage } from "../../utils/errorHelper";
-function EventDetail({ event, onBack }) {
+function EventDetail({ event, onBack,liveData }) {
   const [showModal, setShowModal] = useState(false); 
+
+  // Canlı Stok Bilgisi
+  const [currentStock, setCurrentStock] = useState(event.totalSeats);
+  const [animate, setAnimate] = useState(false);
+  const [sold24h, setSold24h] = useState(0);
+  const [lastSoldAmount, setLastSoldAmount] = useState(null);
+  const [animate24h, setAnimate24h] = useState(false);
+
+  // 1. Sayfa açılınca güncel stoğu veritabanından çek (Rapor endpointini kullanıyoruz)
+  
+    const fetchStock = async () => {
+      try {
+        const res = await apiClient.get("/api/events/reports/sales", { 
+            params: { eventId: event.id } 
+        });
+        if(res.data) {
+          if (res.data.remaining !== undefined) setCurrentStock(res.data.remaining);
+          if (res.data.soldLast24Hours !== undefined) setSold24h(res.data.soldLast24Hours);
+      }
+        // Backend 'remaining' adında bir alan dönüyor
+        setCurrentStock(res.data.remaining);
+      } catch (error) {
+        console.error("Stok bilgisi alınamadı", error);
+        // Hata olursa varsayılan olarak toplam koltuğu göster
+        setCurrentStock(event.totalSeats); 
+      }
+    };
+    useEffect(() => {
+    fetchStock();
+  }, [event.id]);
+
+  // 2. WebSocket'ten yeni veri geldiğinde çalışır
+  useEffect(() => {
+    if (liveData && liveData.eventId === event.id) {
+        // Eğer şu an baktığımız etkinlik için veri geldiyse:
+        // stok güncelle
+        setCurrentStock(liveData.remainingSeats);
+        setAnimate(true);
+        setTimeout(() => setAnimate(false), 500);  
+        // 24 saatlik satış
+        setSold24h(liveData.soldLast24Hours);
+        setAnimate24h(true);
+        setTimeout(() => setAnimate24h(false), 500);
+        // 3. bilet satıldı bildirimi(gizli özellik)
+        if (liveData.quantity > 0) {
+            setLastSoldAmount(liveData.quantity);
+            // 3 saniye sonra bildirimi gizle
+            setTimeout(() => setLastSoldAmount(null), 10000);
+        }
+    }
+  }, [liveData, event.id]);
   if (!event) return null;
 
   // Modal'dan "Onayla" gelince çalışacak fonksiyon
@@ -20,6 +71,7 @@ function EventDetail({ event, onBack }) {
 
       setShowModal(false);
       toast.success("🎉 Bilet başarıyla satın alındı! İyi eğlenceler.");
+      fetchStock();
 
     } catch (error) {
       console.error("Satın alma hatası:", error);
@@ -53,8 +105,33 @@ function EventDetail({ event, onBack }) {
         <div className="card-body p-5">
           <div className="row">
             {/* Sol Taraf: Bilgiler */}
-            <div className="col-md-8">
-              <h2 className="display-5 fw-bold mb-3">{event.title}</h2>
+            <div className="col-md-8">              
+              <div className="d-flex flex-column align-items-start gap-2 mb-4">
+                <div className="d-flex align-items-center gap-3"></div>
+                <h2 className="display-5 fw-bold mb-0">{event.title}</h2>
+    
+             {/* 1. KALAN STOK (KIRMIZI) */}
+                    <div className={`border border-danger text-danger px-3 py-1 rounded d-flex align-items-center gap-2 ${animate ? 'stock-flash' : ''}`} style={{ transition: 'all 0.3s' }}>
+                        <span className="fw-bold fs-5">{currentStock}</span>
+                        <small className="text-uppercase fw-bold" style={{fontSize: '0.7rem'}}>Kalan</small>
+                    </div>
+                  </div>
+
+                  <div className="d-flex align-items-center gap-3">
+                    {/* 2. SON 24 SAAT (SARI/TURUNCU) */}
+                    <div className={`text-warning d-flex align-items-center gap-2 px-1 ${animate24h ? 'stock-flash' : ''}`} style={{ transition: 'all 0.3s' }}>
+                        <span className="fs-6">🔥 Son 24 saatte</span>
+                        <span className="fw-bold fs-5">{sold24h}</span>
+                        <span className="fs-6">bilet satıldı</span>
+                    </div>
+
+                    {/* 3. GİZLİ BİLDİRİM (Biri alınca çıkar) */}
+                    {lastSoldAmount && (
+                        <div className="bg-danger text-white px-2 py-1 rounded shadow blink-infinite">
+                            <small className="fw-bold">⚠️ Az önce {lastSoldAmount} bilet daha satıldı!</small>
+                        </div>
+                    )}
+                  </div>              
               <p className="lead text-secondary">{event.description || "Açıklama bulunmuyor."}</p>
               
               <div className="mt-4">

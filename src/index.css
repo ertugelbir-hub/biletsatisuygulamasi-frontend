@@ -4,3 +4,14 @@ body {
   color: white;
   min-height: 100vh;
 }
+/* GÖRÜNÜR YANIP SÖNME EFEKTİ */
+@keyframes flashAlert {
+  0% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(1.05); } /* Yarısaydam ol ve hafif büyü */
+  100% { opacity: 1; transform: scale(1); }
+}
+
+.blink-infinite {
+  animation: flashAlert 1s infinite ease-in-out !important; /* !important ile zorla */
+  border: 2px solid white; /* Daha dikkat çekici olsun diye beyaz çerçeve */
+}

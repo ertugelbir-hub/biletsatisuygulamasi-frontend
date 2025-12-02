@@ -1,3 +1,4 @@
+import "./App.css";
 import { useEffect, useState } from "react";
 import apiClient from "./apiClient";
 import EventList from "./components/events/EventList";
@@ -22,6 +23,7 @@ function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(!!(localStorage.getItem("token") || sessionStorage.getItem("token")));
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [liveData, setLiveData] = useState(null);
   
   // Sayfalama State'leri (YENİ)
   const [page, setPage] = useState(0); // Şu anki sayfa (0'dan başlar)
@@ -61,30 +63,15 @@ useEffect(() => {
         stompClient = Stomp.over(socket);
         
         // Konsol kirliliğini önlemek için logları kapat (isteğe bağlı)
-        stompClient.debug = (str) => { console.log(str); };
+        stompClient.debug = () => {}; 
 
         stompClient.connect({}, () => {
             // '/topic/sales' kanalını dinle
             stompClient.subscribe('/topic/sales', (message) => {
                 try {
-                    const eventData = JSON.parse(message.body);
-                    
-                    // BİLDİRİMİ FIRLAT 🚀
-                    toast.info(
-                        <div>
-                           <strong>🔥 CANLI SATIŞ!</strong><br/>
-                           "{eventData.eventTitle}" etkinliği için bilet satıldı!<br/>
-                           <small>Kalan Stok: {eventData.remainingSeats}</small>
-                        </div>
-                    , {
-                        position: "top-right",
-                        autoClose: 5000,
-                        hideProgressBar: false,
-                        closeOnClick: true,
-                        pauseOnHover: true,
-                        draggable: true,
-                        theme: "dark",
-                    });
+                    const eventData = JSON.parse(message.body);    
+                    //bildirim                
+                    setLiveData(eventData);
 
                 } catch (err) {
                     console.error("Mesaj okuma hatası:", err);
@@ -214,7 +201,10 @@ useEffect(() => {
     content = <div className="alert alert-danger mt-5">{error}</div>;
   } else if (selectedEvent) {
     // Detay Sayfası
-    content = <EventDetail event={selectedEvent} onBack={() => setSelectedEvent(null)} />;
+    content = <EventDetail event={selectedEvent}
+    liveData={liveData}
+    onBack={() => {setSelectedEvent(null); setLiveData(null);}}
+     />;
   } else {
     // Varsayılan: Liste
     content = (
