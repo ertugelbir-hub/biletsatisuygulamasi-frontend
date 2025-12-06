@@ -216,14 +216,15 @@ function SalesReports() {
 
         {/* --- TABLO --- */}
         <div className="table-responsive">
-            <table className="table table-dark table-striped border-secondary">
+            <table className="table table-dark table-striped table-hover border-secondary align-middle">
             <thead>
                 <tr>
                 <th>Etkinlik Adı</th>
                 <th className="text-end">Kapasite</th>
                 <th className="text-end">Dönem Satışı</th>
-                <th className="text-end">Tüm Zaman</th>
                 <th className="text-end">Dönem Geliri</th>
+                <th className="text-end">Tüm Zaman</th>
+                <th className="text-end">Tüm Zaman Geliri</th>                
                 </tr>
             </thead>
             <tbody>
@@ -231,15 +232,18 @@ function SalesReports() {
                 <tr key={row.eventId}>
                     <td className="text-info fw-bold">{row.title}</td>
                     <td className="text-end">{row.totalSeats}</td>
-                    <td className="text-end text-warning fw-bold">{row.soldInRange}</td>
-                    <td className="text-end text-muted">{row.soldAllTime}</td>
+                    <td className="text-end text-warning fw-bold">{row.soldInRange}</td>                    
                     <td className="text-end text-success fw-bold">
                         {row.revenueRange ? row.revenueRange.toLocaleString('tr-TR') : 0} ₺
+                        </td>
+                        <td className="text-end text-white">{row.soldAllTime}</td>
+                        <td className="text-end text-white">
+                          {row.revenueAllTime ? row.revenueAllTime.toLocaleString('tr-TR') : 0} ₺                          
                     </td>
                 </tr>
                 ))}
                 {reports.length === 0 && (
-                    <tr><td colSpan="5" className="text-center text-muted">Bu tarih aralığında veri yok.</td></tr>
+                    <tr><td colSpan="6" className="text-center text-muted py-4">Bu tarih aralığında veri yok.</td></tr>
                 )}
             </tbody>
             </table>
