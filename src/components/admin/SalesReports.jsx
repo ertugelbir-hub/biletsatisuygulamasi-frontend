@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import apiClient from '../../apiClient';
 import { toast } from 'react-toastify';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 function SalesReports() {
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -107,35 +108,67 @@ function SalesReports() {
 
   return (
     <div>
-      {/* --- FİLTRE ALANI (YENİ) --- */}
-      <div className="card bg-dark border-secondary mb-4 p-3">
+      {/* --- FİLTRE ALANI --- */}
+      <div className="card bg-dark border-secondary mb-5 p-4 shadow-lg">
+        {/* YENİ: Kutuya bir başlık ekledik, daha derli toplu dursun */}
+        <h6 className="text-uppercase text-secondary fw-bold mb-3" style={{ letterSpacing: '1px' }}>
+            🗓️ Rapor Filtreleri
+        </h6>
+
         <form onSubmit={handleFilter}>
-            <div className="row g-3 align-items-end">
+            <div className="row g-4">
                 <div className="col-md-4">
-                    <label className="text-secondary small mb-1">Başlangıç Tarihi</label>
+                    <label className="text-secondary small mb-2 d-block">Başlangıç Tarihi</label>
                     <input 
                         type="datetime-local" 
-                        className="form-control bg-secondary text-white border-0"
+                        className="form-control bg-secondary text-white border-0 py-2" // py-2 ekledik (yükseklik)
                         value={dateRange.from}
                         onChange={(e) => setDateRange({...dateRange, from: e.target.value})}
                     />
                 </div>
                 <div className="col-md-4">
-                    <label className="text-secondary small mb-1">Bitiş Tarihi</label>
+                    <label className="text-secondary small mb-2 d-block">Bitiş Tarihi</label>
                     <input 
                         type="datetime-local" 
-                        className="form-control bg-secondary text-white border-0"
+                        className="form-control bg-secondary text-white border-0 py-2"
                         value={dateRange.to}
                         onChange={(e) => setDateRange({...dateRange, to: e.target.value})}
                     />
                 </div>
-                <div className="col-md-4 d-flex gap-2">
-                    <button type="submit" className="btn btn-primary flex-grow-1">🔍 Filtrele</button>
+                <div className="col-md-4 d-flex align-items-end gap-2"> {/* Butonları alta hizaladık */}
+                    <button type="submit" className="btn btn-primary flex-grow-1 py-2">🔍 Filtrele</button>
                     { (dateRange.from || dateRange.to) && 
-                        <button type="button" onClick={handleClear} className="btn btn-outline-secondary">Temizle</button>
+                        <button type="button" onClick={handleClear} className="btn btn-outline-secondary py-2">Temizle</button>
                     }
                 </div>
+            </div>      
+            {/* --- GRAFİK ALANI --- */}
+      {reports.length > 0 && (
+        <div className="card bg-dark border-secondary mb-4 mt-5 p-3 shadow">
+            <h5 className="text-white mb-4">📊 Etkinlik Satış Performansı</h5>
+            <div style={{ width: '100%', height: 300 }}>
+                <ResponsiveContainer>
+                    <BarChart data={reports}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#444" />
+                        <XAxis dataKey="title" stroke="#ccc" tick={{fontSize: 12}} />
+                        <YAxis stroke="#ccc" />
+                        <Tooltip 
+                            contentStyle={{ backgroundColor: '#222', borderColor: '#555', color: '#fff' }}
+                            itemStyle={{ color: '#fff' }}
+                        />
+                        <Legend />
+                        <Bar 
+                          dataKey={(dateRange.from && dateRange.to) ? "soldInRange" : "soldAllTime"}
+                          name={(dateRange.from && dateRange.to) ? "Dönem Satışı" : "Toplam Satış"}
+                          fill="#0d6efd"
+                          radius={[4, 4, 0, 0]}
+                        />
+                        <Bar dataKey="remaining" name="Kalan Stok" fill="#dc3545" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                </ResponsiveContainer>
             </div>
+        </div>
+      )}
         </form>
       </div>
 
