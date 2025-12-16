@@ -15,6 +15,7 @@ import { RotateLoader } from "react-spinners";
 import NotFound from "./components/NotFound";
 import SockJS from 'sockjs-client';
 import { Stomp } from '@stomp/stompjs';
+import Favorites from "./components/events/Favorites";
 
 function App() {
   // --- 1. STATE TANIMLARI (Hepsi En Tepede) ---
@@ -36,6 +37,7 @@ function App() {
   const [showMyTickets, setShowMyTickets] = useState(false);
   const [showAdmin, setShowAdmin] = useState(false); // Admin paneli açık mı?
   const [showProfile, setShowProfile] = useState(false);
+  const [showFavorites, setShowFavorites] = useState(false);
   
   // Kullanıcı Rolü
  const userRole = localStorage.getItem("role") || sessionStorage.getItem("role");
@@ -188,6 +190,12 @@ useEffect(() => {
   } else if (showMyTickets) {
     // Biletlerim Sayfası
     content = <MyTickets onBack={() => setShowMyTickets(false)} />;
+  } else if (showFavorites) {
+    // Favoriler Sayfası
+    content = <Favorites onEventSelect={(event) => {
+        setSelectedEvent(event);
+        setShowFavorites(false); // Detaya gidince favoriler kapansın
+    }} />;
   } else if (loading) {
     content = (
       <div className="d-flex flex-column justify-content-center align-items-center mt-5">        
@@ -251,6 +259,7 @@ return (
               setShowMyTickets(false);
               setShowAdmin(false);
               loadEvents({}, 0); // Ana sayfaya dönünce sıfırla
+              setShowFavorites(false);
             }}>
             <h1 className="h2 fw-bold text-white mb-0">🎟️ Bilet Satış</h1>
           </div>
@@ -260,9 +269,21 @@ return (
                {/* Admin Butonu */}
                {userRole === 'ADMIN' && (
                  <button 
-                   className={`btn ${showAdmin ? 'btn-danger' : 'btn-outline-danger'}`} onClick={() => { setShowAdmin(true); setShowMyTickets(false); setSelectedEvent(null); }}>Yönetici Paneli</button>
+                   className={`btn ${showAdmin ? 'btn-danger' : 'btn-outline-danger'}`} onClick={() => { setShowAdmin(true); setShowMyTickets(false); setSelectedEvent(null); setShowFavorites(false); }}>Yönetici Paneli</button>
                    )}                                    
-               <button className={`btn ${showMyTickets ? 'btn-warning' : 'btn-outline-warning'}`} onClick={() => { setShowMyTickets(true); setSelectedEvent(null); setShowAdmin(false); }}>Biletlerim</button>
+               <button className={`btn ${showMyTickets ? 'btn-warning' : 'btn-outline-warning'}`} onClick={() => { setShowMyTickets(true); setSelectedEvent(null); setShowAdmin(false); setShowFavorites(false); }}>Biletlerim</button>
+               {/* --- ❤️ YENİ: FAVORİLERİM BUTONU --- */}
+               <button className={`btn ${showFavorites ? 'btn-danger' : 'btn-outline-danger'}`} 
+                   onClick={() => { 
+                       setShowFavorites(true);       // Favorileri aç
+                       setShowMyTickets(false);      // Diğerlerini kapat
+                       setSelectedEvent(null); 
+                       setShowAdmin(false); 
+                       setShowProfile(false);
+                   }}>
+                   Favorilerim
+               </button>
+
                {/* PROFİL BUTONU (İSİM) */}
                <button 
                  className={`btn ${showProfile ? 'btn-info' : 'btn-outline-info'}`}
@@ -271,6 +292,7 @@ return (
                     setShowMyTickets(false);
                     setSelectedEvent(null);
                     setShowAdmin(false);
+                    setShowFavorites(false);
                  }}
                >
                  👤 {localStorage.getItem("username") || sessionStorage.getItem("username")}

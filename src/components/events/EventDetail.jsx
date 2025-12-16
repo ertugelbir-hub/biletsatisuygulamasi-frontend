@@ -1,38 +1,35 @@
 import { useState, useEffect } from "react";
-import TicketModal from "../tickets/TicketModal"; 
 import apiClient from "../../apiClient";
 import { toast } from 'react-toastify';
 import { getErrorMessage } from "../../utils/errorHelper";
+import SeatMap from "./SeatMap";
 function EventDetail({ event, onBack,liveData }) {
-  const [showModal, setShowModal] = useState(false); 
+ // const [showModal, setShowModal] = useState(false); 
+  
 
   // Canlı Stok Bilgisi
+  const [selectedSeatIds, setSelectedSeatIds] = useState([]);
   const [currentStock, setCurrentStock] = useState(event.totalSeats);
   const [animate, setAnimate] = useState(false);
   const [sold24h, setSold24h] = useState(0);
   const [lastSoldAmount, setLastSoldAmount] = useState(null);
   const [animate24h, setAnimate24h] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   // 1. Sayfa açılınca güncel stoğu veritabanından çek (Rapor endpointini kullanıyoruz)
-  
+  useEffect(() => {
     const fetchStock = async () => {
       try {
-        const res = await apiClient.get("/api/events/reports/sales", { 
-            params: { eventId: event.id } 
-        });
+        const res = await apiClient.get("/api/events/reports/sales", { params: { eventId: event.id } });
         if(res.data) {
           if (res.data.remaining !== undefined) setCurrentStock(res.data.remaining);
           if (res.data.soldLast24Hours !== undefined) setSold24h(res.data.soldLast24Hours);
-      }
-        // Backend 'remaining' adında bir alan dönüyor
-        setCurrentStock(res.data.remaining);
-      } catch (error) {
-        console.error("Stok bilgisi alınamadı", error);
-        // Hata olursa varsayılan olarak toplam koltuğu göster
-        setCurrentStock(event.totalSeats); 
+        }
+      } catch (error) { 
+          // Hata olursa varsayılan
+          setCurrentStock(event.totalSeats);
       }
     };
-    useEffect(() => {
     fetchStock();
   }, [event.id]);
 
@@ -59,19 +56,28 @@ function EventDetail({ event, onBack,liveData }) {
   if (!event) return null;
 
   // Modal'dan "Onayla" gelince çalışacak fonksiyon
-  const handlePurchase = async (quantity) => { // <-- Artık sadece quantity alıyor
+  const handlePurchase = async () => {
+    if (selectedSeatIds.length === 0) {
+        toast.warning("Lütfen haritadan en az bir koltuk seçin! 💺");
+        return;
+    }
+
+    setLoading(true);
     try {
       const requestBody = {
         eventId: event.id,
-        quantity: quantity
-        // customerName sildik, backend zaten token'dan alıyor
+        seatIds: selectedSeatIds, // 👈 ÖNEMLİ: Artık koltuk ID listesi gidiyor
+        quantity: selectedSeatIds.length // Log için
       };
 
-      await apiClient.post("/api/tickets/purchase", requestBody); // Senin endpointin /purchase idi
+      await apiClient.post("/api/tickets/purchase", requestBody);
 
-      setShowModal(false);
-      toast.success("🎉 Bilet başarıyla satın alındı! İyi eğlenceler.");
-      fetchStock();
+      toast.success(`🎉 ${selectedSeatIds.length} adet bilet başarıyla alındı!`);
+      
+      // Başarılı olunca listeye dönelim
+      setTimeout(() => {
+          onBack();
+      }, 2000);
 
     } catch (error) {
       console.error("Satın alma hatası:", error);
@@ -136,8 +142,14 @@ function EventDetail({ event, onBack,liveData }) {
               <div className="mt-4">
                 <p className="mb-2"><strong className="text-info">📍 Mekan:</strong> {event.venue}, {event.city}</p>
                 <p className="mb-2"><strong className="text-warning">📅 Tarih:</strong> {event.dateTime ? new Date(event.dateTime).toLocaleString("tr-TR") : "-"}</p>
+              </div>            
+            {/* KOLTUK HARİTASI*/}
+              <hr className="border-secondary" />
+              <SeatMap 
+                  eventId={event.id} 
+                  onSelectionChange={(ids) => setSelectedSeatIds(ids)} 
+              />
               </div>
-            </div>
 
             {/* Sağ Taraf: Fiyat ve Buton */}
             <div className="col-md-4 text-md-end border-start border-secondary ps-md-5 mt-4 mt-md-0 d-flex flex-column justify-content-center">
@@ -145,27 +157,30 @@ function EventDetail({ event, onBack,liveData }) {
                 <span className="d-block text-secondary small">Bilet Fiyatı</span>
                 <span className="display-6 fw-bold text-success">{event.price} ₺</span>
               </div>
-              
+              {/* Seçim Özeti */}
+              <div className="bg-secondary bg-opacity-25 p-3 rounded mb-3 text-start">
+                  <div className="d-flex justify-content-between mb-2">
+                      <span>Seçilen:</span>
+                      <span className="fw-bold">{selectedSeatIds.length} Adet</span>
+                  </div>
+                  <div className="d-flex justify-content-between">
+                      <span>Toplam:</span>
+                      <span className="fw-bold text-info fs-5">
+                          {selectedSeatIds.length * event.price} ₺
+                      </span>
+                  </div>
+              </div>
               <button 
-                className="btn btn-success btn-lg w-100 py-3 fw-bold"
-                onClick={() => setShowModal(true)} // Butona basınca Modalı aç
-              >
-                🎟️ Bilet Satın Al
-              </button>
+            className="btn btn-success w-100 py-3 mt-3 fw-bold fs-5 shadow-sm"
+            onClick={handlePurchase}
+            disabled={loading || selectedSeatIds.length === 0}
+          >
+            {loading ? "İşleniyor..." : "🎟️ Biletleri Satın Al"}
+          </button>
             </div>
           </div>
         </div>
       </div>
-
-      {/* MODAL: Eğer showModal true ise ekrana gelir */}
-      {showModal && (
-        <TicketModal 
-          event={event} 
-          onClose={() => setShowModal(false)} // Kapatma
-          onConfirm={handlePurchase}          // Satın alma işlemi
-        />
-      )}
-
     </div>
   );
 }
