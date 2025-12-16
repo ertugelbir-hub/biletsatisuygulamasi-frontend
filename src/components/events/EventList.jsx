@@ -53,9 +53,13 @@ function EventList({ events, onEventSelect }) {
         <div className="d-flex justify-content-between align-items-center mt-1">
             <span className="badge bg-secondary">{evt.price} ₺</span>
             {/* Link import edilmemişse burayı button yapabilirsin veya import ekleyebilirsin */}
-            <Link to={`/events/${evt.id}`} className="btn btn-outline-light btn-sm py-0" style={{fontSize: '0.65rem'}}>
+            <button 
+                className="btn btn-outline-light btn-sm py-0" 
+                style={{fontSize: '0.65rem'}}
+                onClick={() => onEventSelect(evt)}
+            >
                Git
-            </Link>
+            </button>
         </div>
       </div>
     </div>
