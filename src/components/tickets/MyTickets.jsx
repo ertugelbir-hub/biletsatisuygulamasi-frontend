@@ -85,7 +85,9 @@ function MyTickets({ onBack }) {
                   <div className="d-flex justify-content-between align-items-center mb-3">
                   <span className="fw-bold">{ticket.quantity} Adet</span>
                   <span className="text-warning fw-bold fs-5">                    
-                    {ticket.event && ticket.event.price ? (ticket.event.price * ticket.quantity): "-"} ₺
+                    <div className="fw-bold text-warning fs-4">
+                    {ticket.price ? ticket.price : ticket.event.price} ₺
+                    </div>
                   </span>
                 </div>
                 {/* İPTAL BUTONU */}

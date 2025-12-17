@@ -15,6 +15,8 @@ function EventDetail({ event, onBack,liveData }) {
   const [lastSoldAmount, setLastSoldAmount] = useState(null);
   const [animate24h, setAnimate24h] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [couponCode, setCouponCode] = useState(""); // Girilen kod
+  const [discountApplied, setDiscountApplied] = useState(false); // İndirim oldu mu?
 
   // 1. Sayfa açılınca güncel stoğu veritabanından çek (Rapor endpointini kullanıyoruz)
   useEffect(() => {
@@ -55,6 +57,16 @@ function EventDetail({ event, onBack,liveData }) {
   }, [liveData, event.id]);
   if (!event) return null;
 
+  const applyCoupon = () => {
+    if (couponCode.toUpperCase() === "YILBASI") {
+        setDiscountApplied(true);
+        toast.success("🎄 Harika! %20 Yılbaşı İndirimi Uygulandı!");
+    } else {
+        setDiscountApplied(false);
+        toast.error("❌ Geçersiz Kupon Kodu!");
+    }
+  };
+
   // Modal'dan "Onayla" gelince çalışacak fonksiyon
   const handlePurchase = async () => {
     if (selectedSeatIds.length === 0) {
@@ -67,7 +79,8 @@ function EventDetail({ event, onBack,liveData }) {
       const requestBody = {
         eventId: event.id,
         seatIds: selectedSeatIds, // 👈 ÖNEMLİ: Artık koltuk ID listesi gidiyor
-        quantity: selectedSeatIds.length // Log için
+        quantity: selectedSeatIds.length, // Log için
+        couponCode: discountApplied ? "YILBASI" : ""        
       };
 
       await apiClient.post("/api/tickets/purchase", requestBody);
@@ -155,7 +168,35 @@ function EventDetail({ event, onBack,liveData }) {
             <div className="col-md-4 text-md-end border-start border-secondary ps-md-5 mt-4 mt-md-0 d-flex flex-column justify-content-center">
               <div className="mb-4">
                 <span className="d-block text-secondary small">Bilet Fiyatı</span>
-                <span className="display-6 fw-bold text-success">{event.price} ₺</span>
+                {discountApplied ? (
+                    <div>
+                        <span className="text-decoration-line-through text-muted fs-5 me-2">{event.price} ₺</span>
+                        <span className="display-6 fw-bold text-warning">
+                            {discountApplied ? (event.price * 0.8).toFixed(2) : event.price} ₺
+                        </span>
+                    </div>
+                ) : (
+                    <span className="display-6 fw-bold text-success">{event.price} ₺</span>
+                )}
+              </div>
+              {/* --- KUPON ALANI --- */}
+              <div className="input-group mb-3">
+                  <input 
+                    type="text" 
+                    className="form-control bg-dark text-white border-secondary" 
+                    placeholder="Kupon Kodu (Örn: YILBASI)"
+                    value={couponCode}
+                    onChange={(e) => setCouponCode(e.target.value)}
+                    disabled={discountApplied} // İndirim varsa kutuyu kilitle
+                  />
+                  <button 
+                    className="btn btn-outline-warning" 
+                    type="button" 
+                    onClick={applyCoupon}
+                    disabled={discountApplied}
+                  >
+                    Uygula
+                  </button>
               </div>
               {/* Seçim Özeti */}
               <div className="bg-secondary bg-opacity-25 p-3 rounded mb-3 text-start">
@@ -166,7 +207,10 @@ function EventDetail({ event, onBack,liveData }) {
                   <div className="d-flex justify-content-between">
                       <span>Toplam:</span>
                       <span className="fw-bold text-info fs-5">
-                          {selectedSeatIds.length * event.price} ₺
+                          {discountApplied 
+                           ? (selectedSeatIds.length * event.price * 0.80).toFixed(2) 
+                           : (selectedSeatIds.length * event.price).toFixed(2)
+                         } ₺
                       </span>
                   </div>
               </div>

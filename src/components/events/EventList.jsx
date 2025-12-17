@@ -8,6 +8,14 @@ import { Link } from "react-router-dom";
 function EventList({ events, onEventSelect }) {
   // Kullanıcının favorilediği ID'leri tutacak bir liste
   const [favoriteIds, setFavoriteIds] = useState([]);
+ const [showPromo, setShowPromo] = useState(() => {
+    return sessionStorage.getItem('promoSeen') !== 'true';
+  });
+  // Popup kapatılınca hafızaya "görüldü" diye not düş
+  const handleClosePromo = () => {
+    sessionStorage.setItem('promoSeen', 'true');
+    setShowPromo(false);
+  };
   
   useEffect(() => {
     // Sayfa açılınca favori ID'lerini çek
@@ -66,6 +74,35 @@ function EventList({ events, onEventSelect }) {
   );
 
 return (
+  <> 
+      {/* --- 👇 AGRESİF YILBAŞI REKLAMI (POPUP) --- */}
+      {showPromo && (
+        <div style={{
+            position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
+            backgroundColor: 'rgba(0,0,0,0.9)', zIndex: 9999,
+            display: 'flex', alignItems: 'center', justifyContent: 'center'
+        }}>
+            <div className="card text-center p-5 bg-dark text-white border-warning shadow-lg" 
+                 style={{maxWidth: '500px', border: '2px solid'}}>
+                
+                <h1 className="display-1">🎄</h1>
+                <h2 className="fw-bold text-warning mb-3">YILBAŞI FIRSATI!</h2>
+                <p className="lead">Tüm etkinliklerde geçerli <strong>%20 İNDİRİM</strong> seni bekliyor.</p>
+                
+                <div className="bg-white text-dark p-2 rounded fw-bold fs-3 mb-4" style={{letterSpacing: '5px'}}>
+                    YILBASI
+                </div>
+                
+                <p className="small text-muted mb-4">Ödeme ekranında bu kodu kullanmayı unutma!</p>
+                
+                <button className="btn btn-warning btn-lg fw-bold w-100" onClick={handleClosePromo}>
+                    Kuponunu Kullan ve Avantajlarından Yararlan 🚀
+                </button>
+            </div>
+        </div>
+      )}
+      {/* ------------------------------------------- */}
+
     <div className="container-fluid mt-3">
       <div className="row">
         
@@ -103,6 +140,7 @@ return (
 
       </div>
     </div>
+    </>
   );
 }
 
