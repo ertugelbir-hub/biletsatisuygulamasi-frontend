@@ -97,9 +97,13 @@ function EventDetail({ event, onBack,liveData }) {
       const errorMsg = error.response?.data?.message || "Satın alma işlemi başarısız oldu.";
       const msg = getErrorMessage(error);
       toast.error(`❌ ${msg}`);
+    
+  }finally {
+      // 👇 EN ÖNEMLİ KISIM BURASI:
+      // Hata olsa da olmasa da işlem bitince butonu tekrar aktif et!
+      setLoading(false);
     }
   };
-
   return (
     <div className="text-light mt-4">    
     

@@ -63,10 +63,10 @@ function MyTickets({ onBack }) {
               {/* Header */}
               <div className="card-header border-secondary d-flex justify-content-between align-items-center">
                 <span className="badge bg-success">Satın Alındı</span>
-                <small className="text-muted">Bilet #{ticket.id}{ticket.id}</small>
+                <small className="text-muted">Bilet #{ticket.id}</small>
               </div>
               {/* Body */}
-              <div className="card-body d-flex flex-column-body">
+              <div className="card-body d-flex flex-column">
                 <h5 className="card-title text-info">
                   {ticket.event ? ticket.event.title : "Etkinlik Bilgisi Yok"}
                 </h5>
@@ -74,20 +74,20 @@ function MyTickets({ onBack }) {
                   Kullanıcı: {ticket.username}
                 </p>
                 
-                {ticket.event && (
-                   <p className="card-text small text-muted mb-3">
-                    📍 {ticket.event.city} <br/>
-                     📅 {new Date(ticket.event.dateTime).toLocaleString("tr-TR")}
-                   </p>
+               {ticket.event && (
+                   <div className="mb-3 small text-light opacity-75"> {/* Rengi açtık */}
+                    <div className="mb-1">📍 {ticket.event.city}</div>
+                    <div>📅 {new Date(ticket.event.dateTime).toLocaleString("tr-TR")}</div>
+                   </div>
                 )}
 
                 <div className="mt-auto border-top border-secondary pt-3">
                   <div className="d-flex justify-content-between align-items-center mb-3">
                   <span className="fw-bold">{ticket.quantity} Adet</span>
                   <span className="text-warning fw-bold fs-5">                    
-                    <div className="fw-bold text-warning fs-4">
-                    {ticket.price ? ticket.price : ticket.event.price} ₺
-                    </div>
+                  <span className="fw-bold text-warning fs-4">
+                     {ticket.price ? ticket.price : ticket.event.price} ₺
+                  </span>
                   </span>
                 </div>
                 {/* İPTAL BUTONU */}
