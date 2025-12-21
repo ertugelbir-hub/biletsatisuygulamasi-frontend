@@ -16,6 +16,8 @@ import NotFound from "./components/NotFound";
 import SockJS from 'sockjs-client';
 import { Stomp } from '@stomp/stompjs';
 import Favorites from "./components/events/Favorites";
+import { useCart } from './context/CartContext';
+import CartPage from './components/cart/CartPage';
 
 function App() {
   // --- 1. STATE TANIMLARI (Hepsi En Tepede) ---
@@ -25,6 +27,8 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [liveData, setLiveData] = useState(null);
+  const { cartItems } = useCart();
+  const [showCart, setShowCart] = useState(false);
   
   // Sayfalama State'leri (YENİ)
   const [page, setPage] = useState(0); // Şu anki sayfa (0'dan başlar)
@@ -190,6 +194,9 @@ useEffect(() => {
   } else if (showMyTickets) {
     // Biletlerim Sayfası
     content = <MyTickets onBack={() => setShowMyTickets(false)} />;
+    } else if (showCart) {
+    // 🛒 SEPET SAYFASI
+    content = <CartPage onBack={() => setShowCart(false)} />;
   } else if (showFavorites) {
     // Favoriler Sayfası
     content = <Favorites onEventSelect={(event) => {
@@ -258,6 +265,7 @@ return (
               setSelectedEvent(null); 
               setShowMyTickets(false);
               setShowAdmin(false);
+              setShowCart(false);
               loadEvents({}, 0); // Ana sayfaya dönünce sıfırla
               setShowFavorites(false);
             }}>
@@ -265,17 +273,37 @@ return (
           </div>
           
           {isAuthenticated && (
-            <div className="d-flex gap-3">
+            <div className="d-flex gap-3 align-items-center">
+                <button 
+        className={`btn ${showCart ? 'btn-warning' : 'btn-outline-warning'} position-relative ms-3 fw-bold`}
+        onClick={() => {
+          setShowCart(true);      // Sepeti aç
+          setShowMyTickets(false); // Diğerlerini kapat
+          setSelectedEvent(null);
+          setShowAdmin(false);
+          setShowFavorites(false);
+          setShowProfile(false);
+         }}
+>
+        🛒 Sepetim
+         {cartItems.length > 0 && (
+          <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+          {cartItems.length}
+         </span>
+          )}
+        </button>
+
                {/* Admin Butonu */}
                {userRole === 'ADMIN' && (
                  <button 
-                   className={`btn ${showAdmin ? 'btn-danger' : 'btn-outline-danger'}`} onClick={() => { setShowAdmin(true); setShowMyTickets(false); setSelectedEvent(null); setShowFavorites(false); }}>Yönetici Paneli</button>
+                   className={`btn ${showAdmin ? 'btn-danger' : 'btn-outline-danger'}`} onClick={() => { setShowAdmin(true); setShowMyTickets(false); setShowCart(false); setSelectedEvent(null); setShowFavorites(false); }}>Yönetici Paneli</button>
                    )}                                    
-               <button className={`btn ${showMyTickets ? 'btn-warning' : 'btn-outline-warning'}`} onClick={() => { setShowMyTickets(true); setSelectedEvent(null); setShowAdmin(false); setShowFavorites(false); }}>Biletlerim</button>
+               <button className={`btn ${showMyTickets ? 'btn-warning' : 'btn-outline-warning'}`} onClick={() => { setShowMyTickets(true); setShowCart(false); setSelectedEvent(null); setShowAdmin(false); setShowFavorites(false); }}>Biletlerim</button>
                {/* --- ❤️ YENİ: FAVORİLERİM BUTONU --- */}
                <button className={`btn ${showFavorites ? 'btn-danger' : 'btn-outline-danger'}`} 
                    onClick={() => { 
                        setShowFavorites(true);       // Favorileri aç
+                       setShowCart(false);
                        setShowMyTickets(false);      // Diğerlerini kapat
                        setSelectedEvent(null); 
                        setShowAdmin(false); 
@@ -289,6 +317,7 @@ return (
                  className={`btn ${showProfile ? 'btn-info' : 'btn-outline-info'}`}
                  onClick={() => {
                     setShowProfile(true);
+                    setShowCart(false);
                     setShowMyTickets(false);
                     setSelectedEvent(null);
                     setShowAdmin(false);
@@ -301,6 +330,8 @@ return (
             </div>
           )}
         </div>
+         
+        
 
         {isAuthenticated && !selectedEvent && !showMyTickets && !showAdmin && (
            // Arama yapınca her zaman 0. sayfadan başlat

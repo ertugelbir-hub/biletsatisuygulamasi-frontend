@@ -3,8 +3,11 @@ import apiClient from "../../apiClient";
 import { toast } from 'react-toastify';
 import { getErrorMessage } from "../../utils/errorHelper";
 import SeatMap from "./SeatMap";
+import { useCart } from '../../context/CartContext';
+import PaymentModal from '../common/PaymentModal';
 function EventDetail({ event, onBack,liveData }) {
  // const [showModal, setShowModal] = useState(false); 
+ const { addToCart } = useCart();
   
 
   // Canlı Stok Bilgisi
@@ -17,6 +20,8 @@ function EventDetail({ event, onBack,liveData }) {
   const [loading, setLoading] = useState(false);
   const [couponCode, setCouponCode] = useState(""); // Girilen kod
   const [discountApplied, setDiscountApplied] = useState(false); // İndirim oldu mu?
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  
 
   // 1. Sayfa açılınca güncel stoğu veritabanından çek (Rapor endpointini kullanıyoruz)
   useEffect(() => {
@@ -66,6 +71,41 @@ function EventDetail({ event, onBack,liveData }) {
         toast.error("❌ Geçersiz Kupon Kodu!");
     }
   };
+  const handleAddToCart = () => {
+    // 1. Seçim Kontrolü
+    if (!selectedSeatIds || selectedSeatIds.length === 0) {
+      toast.warning("Lütfen haritadan en az bir koltuk seçin! 💺");
+      return;
+    }
+
+    // 2. Limit Kontrolü
+    if (selectedSeatIds.length > 6) {
+        toast.warning("En fazla 6 bilet sepete ekleyebilirsin.");
+        return;
+    }
+
+    // 3. Sepet Objesini Oluştur
+    const cartItem = {
+      id: Date.now(),
+      eventId: event.id,
+      eventTitle: event.title,
+      seatIds: selectedSeatIds,
+      quantity: selectedSeatIds.length,
+      price: discountApplied 
+             ? (selectedSeatIds.length * event.price * 0.80) 
+             : (selectedSeatIds.length * event.price),
+      couponCode: discountApplied ? couponCode : null
+    };
+
+    // 4. Sepete At ve Temizle
+    addToCart(cartItem);
+    toast.success("🛒 Biletler sepete eklendi!");
+    
+    setSelectedSeatIds([]);
+    setDiscountApplied(false);
+    setCouponCode("");
+  };
+  
 
   // Modal'dan "Onayla" gelince çalışacak fonksiyon
   const handlePurchase = async () => {
@@ -219,16 +259,50 @@ function EventDetail({ event, onBack,liveData }) {
                   </div>
               </div>
               <button 
-            className="btn btn-success w-100 py-3 mt-3 fw-bold fs-5 shadow-sm"
-            onClick={handlePurchase}
-            disabled={loading || selectedSeatIds.length === 0}
-          >
-            {loading ? "İşleniyor..." : "🎟️ Biletleri Satın Al"}
-          </button>
+                className="btn btn-warning w-100 py-3 mb-2 fw-bold fs-5 shadow-sm text-dark"
+                onClick={handleAddToCart}
+                disabled={selectedSeatIds.length === 0}
+              >
+                🛒 Sepete Ekle
+              </button>
+              <button 
+                className="btn btn-success w-100 py-3 mt-3 fw-bold fs-5 shadow-sm"
+                // 👇 BURAYI DEĞİŞTİRİYORUZ 👇
+                onClick={() => {
+                    // 1. Önce koltuk seçili mi kontrol et
+                    if (selectedSeatIds.length === 0) {
+                        toast.warning("Lütfen haritadan en az bir koltuk seçin! 💺");
+                        return;
+                    }
+                    // 2. Her şey tamamsa Modalı AÇ (Direkt satın alma yapma)
+                    setShowPaymentModal(true);
+                }}
+                // 👆 DEĞİŞİKLİK BİTTİ 👆
+                
+                disabled={loading || selectedSeatIds.length === 0}
+            >
+                {loading ? "İşleniyor..." : "⚡ Hızlı Satın Al (Sepetsiz)"}
+            </button>
             </div>
           </div>
         </div>
       </div>
+      {/* ÖDEME MODALI */}
+      {showPaymentModal && (
+        <PaymentModal 
+            // İndirimli tutarı hesaplayıp gösterelim
+            totalAmount={
+                discountApplied 
+                ? (selectedSeatIds.length * event.price * 0.80).toFixed(2) + " ₺"
+                : (selectedSeatIds.length * event.price).toFixed(2) + " ₺"
+            }
+            onClose={() => setShowPaymentModal(false)}
+            onConfirm={() => {
+                setShowPaymentModal(false); // Modalı kapat
+                handlePurchase(); // ASIL SATIN ALMA İŞLEMİNİ BAŞLAT 🚀
+            }}
+        />
+      )}
     </div>
   );
 }
