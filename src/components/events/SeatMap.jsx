@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import apiClient from '../../apiClient';
-
+import SockJS from 'sockjs-client';
+import { Stomp } from '@stomp/stompjs';
 function SeatMap({ eventId, onSelectionChange }) {
   const [seats, setSeats] = useState([]);
   const [selectedIds, setSelectedIds] = useState([]);
@@ -21,7 +22,52 @@ function SeatMap({ eventId, onSelectionChange }) {
     fetchSeats();
   }, [eventId]);
 
-  // 2. Koltuk Seçme/Bırakma Mantığı
+  // 2. ⚡ CANLI BAĞLANTI (Websocket) 
+  useEffect(() => {
+    // Backend'deki endpoint ile aynı olmalı (WebSocketConfig.java'da /ws tanımlıysa)
+    const socket = new SockJS('http://localhost:8080/ws'); 
+    const stompClient = Stomp.over(socket);
+
+    // Bağlan
+    stompClient.connect({}, () => {
+        console.log("🟢 Canlı Koltuk Takibi Başladı");
+
+        // Backend'den gelen "/topic/events/{id}/seats" kanalını dinle
+        stompClient.subscribe(`/topic/events/${eventId}/seats`, (message) => {     
+            try {
+                const incomingData = JSON.parse(message.body);               
+
+                // Backend bazen liste gönderiyor, bazen tek obje. Biz hepsini listeye çevirelim ki garanti olsun:
+                const updatedSeatsList = Array.isArray(incomingData) ? incomingData : [incomingData];
+
+                setSeats(prevSeats => {
+                    // Mevcut koltuk listesini dönüyoruz
+                    return prevSeats.map(seat => {
+                        // Şu anki koltuk (seat), gelen güncellemeler listesinde (updatedSeatsList) var mı?
+                        const matchingUpdate = updatedSeatsList.find(u => u.id === seat.id);
+                        
+                        // Varsa güncelle, yoksa eski halini bırak
+                        if (matchingUpdate) {                           
+                             return { ...seat, sold: true }; // Doğrudan sold=true yapıyoruz
+                        }
+                        return seat;
+                    });
+                });
+
+            } catch (e) {
+                console.error("❌ Mesaj işleme hatası:", e);
+            }
+       });
+    }, (err) => {
+        console.error("🔴 WebSocket Bağlantı Hatası:", err);
+    });
+
+    return () => {
+        if (stompClient && stompClient.connected) stompClient.disconnect();
+    };
+}, [eventId]);
+
+  // 3. Koltuk Seçme/Bırakma Mantığı
   const toggleSeat = (seat) => {
     if (seat.sold) return; // Doluysa dokunma
 
@@ -40,7 +86,7 @@ function SeatMap({ eventId, onSelectionChange }) {
 
   if (loading) return <div className="text-white">Koltuklar yükleniyor...</div>;
 
-  // 3. Koltukları Sıralara Göre Grupla (A: [s1, s2], B: [s3, s4]...)
+  // 4. Koltukları Sıralara Göre Grupla (A: [s1, s2], B: [s3, s4]...)
   const rows = {};
   seats.forEach(seat => {
     if (!rows[seat.rowName]) rows[seat.rowName] = [];

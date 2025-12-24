@@ -82,14 +82,26 @@ function MyTickets({ onBack }) {
                 )}
 
                 <div className="mt-auto border-top border-secondary pt-3">
-                  <div className="d-flex justify-content-between align-items-center mb-3">
-                  <span className="fw-bold">{ticket.quantity} Adet</span>
-                  <span className="text-warning fw-bold fs-5">                    
-                  <span className="fw-bold text-warning fs-4">
-                     {ticket.price ? ticket.price : ticket.event.price} ₺
-                  </span>
-                  </span>
-                </div>
+
+               {/* FİYAT HESAPLAMA ALANI */}
+  <div className="d-flex justify-content-between align-items-end mb-3">
+      {/* SOL: Adet ve Birim Fiyat Bilgisi */}
+      <div className="d-flex flex-column">
+          <span className="fw-bold text-white fs-5">{ticket.quantity} Adet</span>
+          <small className="text-muted">
+             (Tanesi: {ticket.price ? ticket.price : ticket.event.price} ₺)
+          </small>
+      </div>
+
+      {/* SAĞ: Kocaman Toplam Fiyat (Adet * Fiyat) */}
+      <div className="text-end">
+          <span className="text-secondary small d-block">Toplam Ödenen</span>
+          <span className="text-warning fw-bold display-6" style={{ fontSize: '1.8rem' }}>
+              {/* ÇARPMA İŞLEMİ BURADA YAPILIYOR: */}
+              { (ticket.quantity * (ticket.price || ticket.event.price)).toFixed(2) } ₺
+          </span>
+      </div>
+  </div>
                 {/* İPTAL BUTONU */}
                 <button 
                         onClick={() => handleCancel(ticket.id)} 

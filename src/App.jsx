@@ -65,13 +65,14 @@ useEffect(() => {
 
     const connectWebSocket = () => {
         // Backend'e bağlan
-        const socket = new SockJS('http://localhost:8080/ws-ticket');
-        stompClient = Stomp.over(socket);
+        const socket = new SockJS('http://localhost:8080/ws');
+        const stompClient = Stomp.over(() => socket);
         
         // Konsol kirliliğini önlemek için logları kapat (isteğe bağlı)
         stompClient.debug = () => {}; 
 
         stompClient.connect({}, () => {
+          console.log("🟢 App WebSocket Bağlantısı Başarılı");
             // '/topic/sales' kanalını dinle
             stompClient.subscribe('/topic/sales', (message) => {
                 try {
