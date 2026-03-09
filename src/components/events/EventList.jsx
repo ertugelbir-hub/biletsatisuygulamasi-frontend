@@ -5,7 +5,7 @@ import { toast } from "react-toastify";
 import { Link } from "react-router-dom";
 
 
-function EventList({ events, onEventSelect }) {
+function EventList({ events, onEventSelect, sortType, onSortChange }) {
   // Kullanıcının favorilediği ID'leri tutacak bir liste
   const [favoriteIds, setFavoriteIds] = useState([]);
  const [showPromo, setShowPromo] = useState(() => {
@@ -116,6 +116,22 @@ return (
 
         {/* --- ORTA SÜTUN (Ana Liste) --- */}
         <div className="col-lg-8 col-12">
+          <div className="d-flex justify-content-between align-items-center mb-3 bg-dark p-2 rounded border border-secondary shadow-sm">
+                <h5 className="text-white mb-0 ms-2">🎟️ Etkinlikler</h5>
+                <div className="d-flex align-items-center gap-2">
+                    <span className="text-warning fw-bold small">Sırala:</span>
+                    <select 
+                        className="form-select form-select-sm bg-dark text-white border-secondary" 
+                        style={{ width: 'auto', cursor: 'pointer' }}
+                        value={sortType}
+                        onChange={(e) => onSortChange(e.target.value)}
+                    >
+                        <option value="upcoming">📅 Yaklaşan Etkinlikler</option>
+                        <option value="newest-added">✨ Sisteme Son Eklenenler</option>
+                        <option value="best-selling">🔥 Popüler (Çok Satanlar)</option>
+                    </select>
+                </div>
+            </div>
             <div className="row g-4 justify-content-center">
               {events.map((event) => (
                 // DÜZELTME: Buradaki fazlalık 'div'i kaldırdık.

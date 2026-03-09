@@ -34,6 +34,7 @@ function App() {
   const [page, setPage] = useState(0); // Şu anki sayfa (0'dan başlar)
   const [totalPages, setTotalPages] = useState(0); // Toplam sayfa sayısı
   const [currentFilters, setCurrentFilters] = useState({}); // Aktif filtreleri tutalım
+  const [sortType, setSortType] = useState("upcoming"); // Kullanıcının seçtiği sıralama türü
   
   // Sayfa Yönlendirme State'leri
   const [selectedEvent, setSelectedEvent] = useState(null);
@@ -97,6 +98,28 @@ useEffect(() => {
     };
 
   }, [isAuthenticated]);
+
+        // 🔥 YENİ: Sadece "Sıralama" kutusunu dinleyen özel ajan
+  useEffect(() => {
+    // Eğer sayfaya ilk girişse veya sistem henüz yükleniyorsa durdur
+    if (!isAuthenticated) return;
+
+    if (sortType === "best-selling") {
+      // 1. Çok satanlar: Backend'deki özel SQL'imize git
+      apiClient.get('/api/events?sort=best-selling')
+        .then(res => {
+          setEvents(res.data);
+          setTotalPages(1); 
+          setPage(0);
+        })
+        .catch(err => console.error("Çok satanlar çekilemedi:", err));
+    } 
+    else {
+      // 2. Yaklaşanlar VEYA Son Eklenenler: İkisi için de ana motoru çalıştır!
+      // loadEvents zaten yukarıda yazdığımız mantıkla doğru parametreyi yollayacak.
+      loadEvents(currentFilters, 0);
+    } 
+  }, [sortType]); // 👈 Bu kod sadece sortType (Sıralama kutusu) değiştiğinde çalışır
   // --- 3. YARDIMCI FONKSİYONLAR ---
  // Hem filtreleri hem de sayfa numarasını yönetir
   async function loadEvents(filters = {}, pageNum = 0) {
@@ -105,15 +128,18 @@ useEffect(() => {
       await new Promise(r => setTimeout(r, 2000));
      // Backend'deki 'search' endpoint'i hem filtreleme hem sayfalama yapar
       // Parametreleri hazırlıyoruz
+      const currentSortField = sortType === "newest-added" ? "id" : "dateTime";
+      const currentSortDir = sortType === "newest-added" ? "desc" : "asc";
       const params = {
         page: pageNum,
         size: 6, // Her sayfada 6 etkinlik (3x2 ızgara için ideal)
-        sort: "dateTime",
-        dir: "asc",      
+       sort: currentSortField, // 👈 Artık dinamik
+        dir: currentSortDir,    // 👈 Artık dinamik
         ...filters
         
       };
-      
+
+  
      // Temizlik: Boş string olan filtreleri gönderme
       if (!params.q) delete params.q;
       if (!params.city) delete params.city;
@@ -225,7 +251,12 @@ useEffect(() => {
     // Varsayılan: Liste
     content = (
       <>
-      <EventList events={events} onEventSelect={(event) => setSelectedEvent(event)} />;
+      <EventList 
+          events={events} 
+          onEventSelect={(event) => setSelectedEvent(event)} 
+          sortType={sortType} 
+          onSortChange={(newSort) => setSortType(newSort)} // 👈 Sadece bu kalsın!
+      />
     {/* SAYFALAMA BUTONLARI (Sadece birden fazla sayfa varsa göster) */}
     {totalPages > 1 && (
           <div className="d-flex justify-content-center align-items-center mt-5 gap-3">
