@@ -18,6 +18,7 @@ import { Stomp } from '@stomp/stompjs';
 import Favorites from "./components/events/Favorites";
 import { useCart } from './context/CartContext';
 import CartPage from './components/cart/CartPage';
+import { useTranslation } from 'react-i18next';
 
 function App() {
   // --- 1. STATE TANIMLARI (Hepsi En Tepede) ---
@@ -46,7 +47,8 @@ function App() {
   
   // Kullanıcı Rolü
  const userRole = localStorage.getItem("role") || sessionStorage.getItem("role");
-
+ // Çeviri
+  const { t, i18n } = useTranslation();
 
   // --- 2. USE EFFECT ---
   useEffect(() => {
@@ -180,19 +182,19 @@ useEffect(() => {
     }
   };
 
-  const handleLogout = () => {
-    // Temizlik İşlemi
-    localStorage.removeItem("token");
-    localStorage.removeItem("username");
-    localStorage.removeItem("role");     
+ const handleLogout = () => {
+    // 1. HER İKİ HAFIZAYI DA TERTEMİZ YAP (Garantici yöntem)
+    localStorage.clear();
+    sessionStorage.clear();
 
-    // State'leri Sıfırla
+    // 2. State'leri Sıfırla
     setIsAuthenticated(false);
     setSelectedEvent(null);
     setShowMyTickets(false);
-    setShowAdmin(false); // Admin panelini kapat
+    setShowAdmin(false);
     setEvents([]);
     setShowProfile(false);
+    setCartItems([]); // Sepeti de temizlemek profesyonelce olur
   };
   // Eğer sayfa bulunamadıysa, Header'ı falan gösterme, direkt bunu göster ve bitir.
   if (isNotFound) {
@@ -236,7 +238,7 @@ useEffect(() => {
         <div className="mb-4">
            <RotateLoader color="#36d7b7" size={15} margin={2} />
         </div>
-        <p className="text-light fs-5 mt-3">Yükleniyor...</p>
+        <p className="text-light fs-5 mt-3">{t('app.loading')}</p>
       </div>
     );
   } else if (error) {
@@ -265,11 +267,11 @@ useEffect(() => {
               disabled={page === 0}
               onClick={() => handlePageChange(page - 1)}
             >
-              ← Önceki
+              {t('pagination.prev')}
             </button>
             
             <span className="text-white fw-bold">
-              Sayfa {page + 1} / {totalPages}
+             {t('pagination.page', { current: page + 1, total: totalPages })}
             </span>
             
             <button 
@@ -277,7 +279,7 @@ useEffect(() => {
               disabled={page === totalPages - 1}
               onClick={() => handlePageChange(page + 1)}
             >
-              Sonraki →
+              {t('pagination.next')}
             </button>
           </div>
         )}
@@ -292,73 +294,68 @@ return (
       <div className="container py-5" style={{ maxWidth: "1200px", margin: "0 auto" }}>
         
         {/* --- 1. HEADER (BAŞLIK VE BUTONLAR) --- */}
-        <div className="d-flex justify-content-between align-items-center mb-5 border-bottom border-secondary pb-3">
+        <div className="d-flex flex-wrap justify-content-between align-items-center mb-4 border-bottom border-secondary pb-3 gap-3">
+          
+          {/* Logo / Başlık Kısmı (text-nowrap ile emojinin kopmasını engelledik) */}
           <div role="button" onClick={() => {
               setSelectedEvent(null); 
               setShowMyTickets(false);
               setShowAdmin(false);
               setShowCart(false);
-              loadEvents({}, 0); // Ana sayfaya dönünce sıfırla
+              loadEvents({}, 0); 
               setShowFavorites(false);
             }}>
-            <h1 className="h2 fw-bold text-white mb-0">🎟️ Bilet Satış</h1>
+            <h1 className="h3 fw-bold text-white mb-0 text-nowrap">{t('app.title')}</h1>
           </div>
           
+          {/* Butonlar Kısmı */}
           {isAuthenticated && (
-            <div className="d-flex gap-3 align-items-center">
+            <div className="d-flex gap-2 align-items-center flex-wrap justify-content-end">
+                
+                {/* --- DİL SEÇİM BUTONLARI --- */}
+                <div className="btn-group shadow-sm" role="group">
+                    <button type="button" className={`btn btn-sm ${i18n.language === 'tr' ? 'btn-light fw-bold' : 'btn-outline-light'}`} onClick={() => {i18n.changeLanguage('tr'),localStorage.setItem('user-language', 'tr');}}>TR</button>
+                    <button type="button" className={`btn btn-sm ${i18n.language === 'en' ? 'btn-light fw-bold' : 'btn-outline-light'}`} onClick={() => {i18n.changeLanguage('en'),localStorage.setItem('user-language', 'en');}}>EN</button>
+                    <button type="button" className={`btn btn-sm ${i18n.language === 'de' ? 'btn-light fw-bold' : 'btn-outline-light'}`} onClick={() => {i18n.changeLanguage('de'),localStorage.setItem('user-language', 'de');}}>DE</button>
+                </div>
+
                 <button 
-        className={`btn ${showCart ? 'btn-warning' : 'btn-outline-warning'} position-relative ms-3 fw-bold`}
-        onClick={() => {
-          setShowCart(true);      // Sepeti aç
-          setShowMyTickets(false); // Diğerlerini kapat
-          setSelectedEvent(null);
-          setShowAdmin(false);
-          setShowFavorites(false);
-          setShowProfile(false);
-         }}
->
-        🛒 Sepetim
-         {cartItems.length > 0 && (
-          <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-          {cartItems.length}
-         </span>
-          )}
-        </button>
+                  className={`btn btn-sm ${showCart ? 'btn-warning' : 'btn-outline-warning'} position-relative fw-bold`}
+                  onClick={() => {
+                    setShowCart(true); setShowMyTickets(false); setSelectedEvent(null);
+                    setShowAdmin(false); setShowFavorites(false); setShowProfile(false);
+                  }}
+                >
+                  {t('app.cart')}
+                  {cartItems.length > 0 && (
+                    <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style={{fontSize: '0.65rem'}}>
+                    {cartItems.length}
+                    </span>
+                  )}
+                </button>
 
-               {/* Admin Butonu */}
-               {userRole === 'ADMIN' && (
-                 <button 
-                   className={`btn ${showAdmin ? 'btn-danger' : 'btn-outline-danger'}`} onClick={() => { setShowAdmin(true); setShowMyTickets(false); setShowCart(false); setSelectedEvent(null); setShowFavorites(false); }}>Yönetici Paneli</button>
-                   )}                                    
-               <button className={`btn ${showMyTickets ? 'btn-warning' : 'btn-outline-warning'}`} onClick={() => { setShowMyTickets(true); setShowCart(false); setSelectedEvent(null); setShowAdmin(false); setShowFavorites(false); }}>Biletlerim</button>
-               {/* --- ❤️ YENİ: FAVORİLERİM BUTONU --- */}
-               <button className={`btn ${showFavorites ? 'btn-danger' : 'btn-outline-danger'}`} 
-                   onClick={() => { 
-                       setShowFavorites(true);       // Favorileri aç
-                       setShowCart(false);
-                       setShowMyTickets(false);      // Diğerlerini kapat
-                       setSelectedEvent(null); 
-                       setShowAdmin(false); 
-                       setShowProfile(false);
-                   }}>
-                   Favorilerim
-               </button>
+                {userRole === 'ADMIN' && (
+                  <button className={`btn btn-sm ${showAdmin ? 'btn-danger' : 'btn-outline-danger'}`} onClick={() => { setShowAdmin(true); setShowMyTickets(false); setShowCart(false); setSelectedEvent(null); setShowFavorites(false); }}>
+                    {t('app.adminPanel')}
+                  </button>
+                )}                                    
+                
+                <button className={`btn btn-sm ${showMyTickets ? 'btn-warning' : 'btn-outline-warning'}`} onClick={() => { setShowMyTickets(true); setShowCart(false); setSelectedEvent(null); setShowAdmin(false); setShowFavorites(false); }}>
+                  {t('app.myTickets')}
+                </button>
+                
+                <button className={`btn btn-sm ${showFavorites ? 'btn-danger' : 'btn-outline-danger'}`} onClick={() => { setShowFavorites(true); setShowCart(false); setShowMyTickets(false); setSelectedEvent(null); setShowAdmin(false); setShowProfile(false); }}>
+                  {t('app.favorites')}
+                </button>
 
-               {/* PROFİL BUTONU (İSİM) */}
-               <button 
-                 className={`btn ${showProfile ? 'btn-info' : 'btn-outline-info'}`}
-                 onClick={() => {
-                    setShowProfile(true);
-                    setShowCart(false);
-                    setShowMyTickets(false);
-                    setSelectedEvent(null);
-                    setShowAdmin(false);
-                    setShowFavorites(false);
-                 }}
-               >
-                 👤 {localStorage.getItem("username") || sessionStorage.getItem("username")}
-               </button>
-               <button onClick={handleLogout} className="btn btn-outline-danger">Çıkış ({localStorage.getItem("username") || sessionStorage.getItem("username")})</button>
+                <button className={`btn btn-sm ${showProfile ? 'btn-info' : 'btn-outline-info'}`} onClick={() => { setShowProfile(true); setShowCart(false); setShowMyTickets(false); setSelectedEvent(null); setShowAdmin(false); setShowFavorites(false); }}>
+                  👤 {localStorage.getItem("username") || sessionStorage.getItem("username")}
+                </button>
+                
+                {/* Çıkış butonundaki fazla ismi kaldırdık ki yer kaplamasın */}
+                <button onClick={handleLogout} className="btn btn-sm btn-outline-danger">
+                  {t('app.logout')}
+                </button>
             </div>
           )}
         </div>

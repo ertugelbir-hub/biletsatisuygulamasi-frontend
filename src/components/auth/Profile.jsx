@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import apiClient from '../../apiClient'; // Yola dikkat et (../../)
 import { toast } from 'react-toastify';
-
+import { useTranslation } from 'react-i18next';
 function Profile({ onBack }) {
   const username = localStorage.getItem("username") || sessionStorage.getItem("username");
   const role = localStorage.getItem("role") || sessionStorage.getItem("role");
+  const { t } = useTranslation();
 
   // Şifre State'leri
   const [passwords, setPasswords] = useState({
@@ -50,8 +51,8 @@ function Profile({ onBack }) {
   return (
     <div className="container text-white" style={{ maxWidth: '800px' }}>
       <div className="d-flex align-items-center mb-4">
-        <button onClick={onBack} className="btn btn-outline-secondary me-3">← Geri</button>
-        <h2 className="mb-0">👤 Profilim</h2>
+        <button onClick={onBack} className="btn btn-outline-secondary me-3">{t('common.back')}</button>
+        <h2 className="mb-0">{t('profilePage.title')}</h2>
       </div>
 
       <div className="row g-4">
@@ -69,11 +70,11 @@ function Profile({ onBack }) {
 
         <div className="col-md-8">
           <div className="card bg-dark border-secondary p-4 shadow">
-            <h5 className="border-bottom border-secondary pb-2 mb-4 text-warning">Şifre Değiştir</h5>
+            <h5 className="border-bottom border-secondary pb-2 mb-4 text-warning">{t('profilePage.changePassword')}</h5>
             
             <form onSubmit={handleUpdate}>
               <div className="mb-3">
-                <label className="form-label text-secondary">Mevcut Şifre</label>
+                <label className="form-label text-secondary">{t('profilePage.currentPassword')}</label>
                 <input 
                   type="password" name="oldPassword"
                   className="form-control bg-dark text-white border-secondary" 
@@ -83,7 +84,7 @@ function Profile({ onBack }) {
 
               <div className="row">
                 <div className="col-md-6 mb-3">
-                  <label className="form-label text-secondary">Yeni Şifre</label>
+                  <label className="form-label text-secondary">{t('profilePage.newPassword')}</label>
                   <input 
                     type="password" name="newPassword"
                     className="form-control bg-dark text-white border-secondary" 
@@ -91,7 +92,7 @@ function Profile({ onBack }) {
                   />
                 </div>
                 <div className="col-md-6 mb-3">
-                  <label className="form-label text-secondary">Şifre Tekrar</label>
+                  <label className="form-label text-secondary">{t('profilePage.confirmPassword')}</label>
                   <input 
                     type="password" name="confirmPassword"
                     className="form-control bg-dark text-white border-secondary" 
@@ -102,7 +103,7 @@ function Profile({ onBack }) {
 
               <div className="text-end mt-3">
                 <button type="submit" className="btn btn-success" disabled={loading}>
-                  {loading ? "Güncelleniyor..." : "Şifreyi Güncelle"}
+                  {loading ? t('profilePage.updatingBtn') : t('profilePage.updateBtn')}
                 </button>
               </div>
             </form>

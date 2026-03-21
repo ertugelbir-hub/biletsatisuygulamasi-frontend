@@ -3,12 +3,15 @@ import apiClient from '../../apiClient';
 import EventItem from './EventItem';
 import { toast } from "react-toastify";
 import { Link } from "react-router-dom";
+import { useTranslation } from 'react-i18next';
 
 
 function EventList({ events, onEventSelect, sortType, onSortChange }) {
   // Kullanıcının favorilediği ID'leri tutacak bir liste
   const [favoriteIds, setFavoriteIds] = useState([]);
+  const { t } = useTranslation();
  const [showPromo, setShowPromo] = useState(() => {
+  
     return sessionStorage.getItem('promoSeen') !== 'true';
   });
   // Popup kapatılınca hafızaya "görüldü" diye not düş
@@ -41,7 +44,7 @@ function EventList({ events, onEventSelect, sortType, onSortChange }) {
   }, []); // Sadece ilk açılışta çalışsın
 
   if (!events || events.length === 0) {
-    return <div className="text-center text-white mt-5">Etkinlik bulunamadı.</div>;
+    return <div className="text-center text-white mt-5">{t('eventList.notFound')}</div>;
   }
   const leftAds = events ? events.slice(0, 2) : [];
   const rightAds = events ? [...events].reverse().slice(0, 2) : [];
@@ -66,7 +69,7 @@ function EventList({ events, onEventSelect, sortType, onSortChange }) {
                 style={{fontSize: '0.65rem'}}
                 onClick={() => onEventSelect(evt)}
             >
-               Git
+              {t('eventList.goBtn')}
             </button>
         </div>
       </div>
@@ -86,17 +89,21 @@ return (
                  style={{maxWidth: '500px', border: '2px solid'}}>
                 
                 <h1 className="display-1">🎄</h1>
-                <h2 className="fw-bold text-warning mb-3">YILBAŞI FIRSATI!</h2>
-                <p className="lead">Tüm etkinliklerde geçerli <strong>%20 İNDİRİM</strong> seni bekliyor.</p>
+                <h2 className="fw-bold text-warning mb-3">{t('promo.title')}</h2>
+                <p className="lead">
+                 {t('promo.desc1')}
+                 <strong>{t('promo.desc2')}</strong>
+                 {t('promo.desc3')}
+                  </p>
                 
                 <div className="bg-white text-dark p-2 rounded fw-bold fs-3 mb-4" style={{letterSpacing: '5px'}}>
                     YILBASI
                 </div>
                 
-                <p className="small text-muted mb-4">Ödeme ekranında bu kodu kullanmayı unutma!</p>
+                <p className="small text-muted mb-4">{t('promo.hint')}</p>
                 
                 <button className="btn btn-warning btn-lg fw-bold w-100" onClick={handleClosePromo}>
-                    Kuponunu Kullan ve Avantajlarından Yararlan 🚀
+                    {t('promo.btn')}
                 </button>
             </div>
         </div>
@@ -109,7 +116,7 @@ return (
         {/* --- SOL SÜTUN (Sadece Geniş Ekranda Görünür) --- */}
         <div className="col-lg-2 d-none d-lg-block">
             <div className="sticky-top" style={{ top: '20px' }}>
-                <h6 className="text-warning border-bottom border-secondary pb-2 mb-3 small">🔥 Haftanın Yıldızları</h6>
+                <h6 className="text-warning border-bottom border-secondary pb-2 mb-3 small">{t('eventList.stars')}</h6>
                 {leftAds.map(evt => <MiniCard key={`L-${evt.id}`} evt={evt} />)}
             </div>
         </div>
@@ -117,18 +124,18 @@ return (
         {/* --- ORTA SÜTUN (Ana Liste) --- */}
         <div className="col-lg-8 col-12">
           <div className="d-flex justify-content-between align-items-center mb-3 bg-dark p-2 rounded border border-secondary shadow-sm">
-                <h5 className="text-white mb-0 ms-2">🎟️ Etkinlikler</h5>
+                <h5 className="text-white mb-0 ms-2">{t('eventList.eventsTitle')}</h5>
                 <div className="d-flex align-items-center gap-2">
-                    <span className="text-warning fw-bold small">Sırala:</span>
+                    <span className="text-warning fw-bold small">{t('eventList.sortLabel')}</span>
                     <select 
                         className="form-select form-select-sm bg-dark text-white border-secondary" 
                         style={{ width: 'auto', cursor: 'pointer' }}
                         value={sortType}
                         onChange={(e) => onSortChange(e.target.value)}
                     >
-                        <option value="upcoming">📅 Yaklaşan Etkinlikler</option>
-                        <option value="newest-added">✨ Sisteme Son Eklenenler</option>
-                        <option value="best-selling">🔥 Popüler (Çok Satanlar)</option>
+                        <option value="upcoming">{t('eventList.sortUpcoming')}</option>
+                        <option value="newest-added">{t('eventList.sortNewest')}</option>
+                        <option value="best-selling">{t('eventList.sortPopular')}</option>
                     </select>
                 </div>
             </div>
@@ -149,7 +156,7 @@ return (
         {/* --- SAĞ SÜTUN (Sadece Geniş Ekranda Görünür) --- */}
         <div className="col-lg-2 d-none d-lg-block">
              <div className="sticky-top" style={{ top: '20px' }}>
-                <h6 className="text-info border-bottom border-secondary pb-2 mb-3 small">🚀 Sizin İçin</h6>
+                <h6 className="text-info border-bottom border-secondary pb-2 mb-3 small">{t('eventList.forYou')}</h6>
                 {rightAds.map(evt => <MiniCard key={`R-${evt.id}`} evt={evt} />)}
             </div>
         </div>

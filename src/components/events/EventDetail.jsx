@@ -5,10 +5,11 @@ import { getErrorMessage } from "../../utils/errorHelper";
 import SeatMap from "./SeatMap";
 import { useCart } from '../../context/CartContext';
 import PaymentModal from '../common/PaymentModal';
+import { useTranslation } from 'react-i18next';
 function EventDetail({ event, onBack,liveData }) {
  // const [showModal, setShowModal] = useState(false); 
  const { addToCart } = useCart();
-  
+  const { t } = useTranslation();
 
   // Canlı Stok Bilgisi
   const [selectedSeatIds, setSelectedSeatIds] = useState([]);
@@ -65,22 +66,22 @@ function EventDetail({ event, onBack,liveData }) {
   const applyCoupon = () => {
     if (couponCode.toUpperCase() === "YILBASI") {
         setDiscountApplied(true);
-        toast.success("🎄 Harika! %20 Yılbaşı İndirimi Uygulandı!");
+        toast.success(t('eventDetail.couponSuccess'));
     } else {
         setDiscountApplied(false);
-        toast.error("❌ Geçersiz Kupon Kodu!");
+        toast.error(t('eventDetail.couponError'));
     }
   };
   const handleAddToCart = () => {
     // 1. Seçim Kontrolü
     if (!selectedSeatIds || selectedSeatIds.length === 0) {
-      toast.warning("Lütfen haritadan en az bir koltuk seçin! 💺");
+      toast.warning(t('eventDetail.selectSeatWarning'));
       return;
     }
 
     // 2. Limit Kontrolü
     if (selectedSeatIds.length > 6) {
-        toast.warning("En fazla 6 bilet sepete ekleyebilirsin.");
+        toast.warning(t('eventDetail.maxSeatWarning'));
         return;
     }
 
@@ -99,7 +100,7 @@ function EventDetail({ event, onBack,liveData }) {
 
     // 4. Sepete At ve Temizle
     addToCart(cartItem);
-    toast.success("🛒 Biletler sepete eklendi!");
+    toast.success(t('eventDetail.cartSuccess'));
     
     setSelectedSeatIds([]);
     setDiscountApplied(false);
@@ -110,7 +111,7 @@ function EventDetail({ event, onBack,liveData }) {
   // Modal'dan "Onayla" gelince çalışacak fonksiyon
   const handlePurchase = async () => {
     if (selectedSeatIds.length === 0) {
-        toast.warning("Lütfen haritadan en az bir koltuk seçin! 💺");
+        toast.warning(t('eventDetail.selectSeatWarning'));
         return;
     }
 
@@ -125,7 +126,7 @@ function EventDetail({ event, onBack,liveData }) {
 
       await apiClient.post("/api/tickets/purchase", requestBody);
 
-      toast.success(`🎉 ${selectedSeatIds.length} adet bilet başarıyla alındı!`);
+      toast.success(t('eventDetail.purchaseSuccess', { count: selectedSeatIds.length }));
       
       // Başarılı olunca listeye dönelim
       setTimeout(() => {
@@ -134,7 +135,7 @@ function EventDetail({ event, onBack,liveData }) {
 
     } catch (error) {
       console.error("Satın alma hatası:", error);
-      const errorMsg = error.response?.data?.message || "Satın alma işlemi başarısız oldu.";
+      const errorMsg = error.response?.data?.message || t('eventDetail.purchaseError');
       const msg = getErrorMessage(error);
       toast.error(`❌ ${msg}`);
     
@@ -149,7 +150,7 @@ function EventDetail({ event, onBack,liveData }) {
     
       {/* Geri Dön Butonu */}
       <button onClick={onBack} className="btn btn-outline-secondary mb-4">
-        ← Listeye Dön
+       {t('eventDetail.backToList')}
       </button>
       
      {event.imageUrl && (
@@ -175,30 +176,28 @@ function EventDetail({ event, onBack,liveData }) {
              {/* 1. KALAN STOK (KIRMIZI) */}
                     <div className={`border border-danger text-danger px-3 py-1 rounded d-flex align-items-center gap-2 ${animate ? 'stock-flash' : ''}`} style={{ transition: 'all 0.3s' }}>
                         <span className="fw-bold fs-5">{currentStock}</span>
-                        <small className="text-uppercase fw-bold" style={{fontSize: '0.7rem'}}>Kalan</small>
+                        <small className="text-uppercase fw-bold" style={{fontSize: '0.7rem'}}>{t('eventDetail.remaining')}</small>
                     </div>
                   </div>
 
                   <div className="d-flex align-items-center gap-3">
                     {/* 2. SON 24 SAAT (SARI/TURUNCU) */}
                     <div className={`text-warning d-flex align-items-center gap-2 px-1 ${animate24h ? 'stock-flash' : ''}`} style={{ transition: 'all 0.3s' }}>
-                        <span className="fs-6">🔥 Son 24 saatte</span>
-                        <span className="fw-bold fs-5">{sold24h}</span>
-                        <span className="fs-6">bilet satıldı</span>
-                    </div>
+    <span className="fs-5 fw-bold">🔥 {t('eventDetail.sold24h', { count: sold24h })}</span>
+</div>
 
                     {/* 3. GİZLİ BİLDİRİM (Biri alınca çıkar) */}
                     {lastSoldAmount && (
                         <div className="bg-danger text-white px-2 py-1 rounded shadow blink-infinite">
-                            <small className="fw-bold">⚠️ Az önce {lastSoldAmount} bilet daha satıldı!</small>
+                            <small className="fw-bold">{t('eventDetail.justSold', { count: lastSoldAmount })}</small>
                         </div>
                     )}
                   </div>              
-              <p className="lead text-secondary">{event.description || "Açıklama bulunmuyor."}</p>
+              <p className="lead text-secondary">{event.description || t('eventDetail.noDesc')}</p>
               
               <div className="mt-4">
-                <p className="mb-2"><strong className="text-info">📍 Mekan:</strong> {event.venue}, {event.city}</p>
-                <p className="mb-2"><strong className="text-warning">📅 Tarih:</strong> {event.dateTime ? new Date(event.dateTime).toLocaleString("tr-TR") : "-"}</p>
+                <p className="mb-2"><strong className="text-info">📍{t('eventDetail.venue')}</strong> {event.venue}, {event.city}</p>
+                <p className="mb-2"><strong className="text-warning">{t('eventDetail.date')}</strong> {event.dateTime ? new Date(event.dateTime).toLocaleString("tr-TR") : "-"}</p>
               </div>            
             {/* KOLTUK HARİTASI*/}
               <hr className="border-secondary" />
@@ -211,7 +210,7 @@ function EventDetail({ event, onBack,liveData }) {
             {/* Sağ Taraf: Fiyat ve Buton */}
             <div className="col-md-4 text-md-end border-start border-secondary ps-md-5 mt-4 mt-md-0 d-flex flex-column justify-content-center">
               <div className="mb-4">
-                <span className="d-block text-secondary small">Bilet Fiyatı</span>
+                <span className="d-block text-secondary small">{t('eventDetail.ticketPrice')}</span>
                 {discountApplied ? (
                     <div>
                         <span className="text-decoration-line-through text-muted fs-5 me-2">{event.price} ₺</span>
@@ -228,7 +227,7 @@ function EventDetail({ event, onBack,liveData }) {
                   <input 
                     type="text" 
                     className="form-control bg-dark text-white border-secondary" 
-                    placeholder="Kupon Kodu (Örn: YILBASI)"
+                    placeholder={t('eventDetail.couponPlaceholder')}
                     value={couponCode}
                     onChange={(e) => setCouponCode(e.target.value)}
                     disabled={discountApplied} // İndirim varsa kutuyu kilitle
@@ -239,17 +238,17 @@ function EventDetail({ event, onBack,liveData }) {
                     onClick={applyCoupon}
                     disabled={discountApplied}
                   >
-                    Uygula
+                   {t('eventDetail.apply')}
                   </button>
               </div>
               {/* Seçim Özeti */}
               <div className="bg-secondary bg-opacity-25 p-3 rounded mb-3 text-start">
                   <div className="d-flex justify-content-between mb-2">
-                      <span>Seçilen:</span>
+                      <span>{t('eventDetail.selectedCount')}</span>
                       <span className="fw-bold">{selectedSeatIds.length} Adet</span>
                   </div>
                   <div className="d-flex justify-content-between">
-                      <span>Toplam:</span>
+                      <span>{t('eventDetail.total')}</span>
                       <span className="fw-bold text-info fs-5">
                           {discountApplied 
                            ? (selectedSeatIds.length * event.price * 0.80).toFixed(2) 
@@ -263,7 +262,7 @@ function EventDetail({ event, onBack,liveData }) {
                 onClick={handleAddToCart}
                 disabled={selectedSeatIds.length === 0}
               >
-                🛒 Sepete Ekle
+                🛒 {t('eventDetail.addToCart')}
               </button>
               <button 
                 className="btn btn-success w-100 py-3 mt-3 fw-bold fs-5 shadow-sm"
@@ -271,7 +270,7 @@ function EventDetail({ event, onBack,liveData }) {
                 onClick={() => {
                     // 1. Önce koltuk seçili mi kontrol et
                     if (selectedSeatIds.length === 0) {
-                        toast.warning("Lütfen haritadan en az bir koltuk seçin! 💺");
+                        toast.warning(t('eventDetail.selectSeatWarning'));
                         return;
                     }
                     // 2. Her şey tamamsa Modalı AÇ (Direkt satın alma yapma)
@@ -281,7 +280,7 @@ function EventDetail({ event, onBack,liveData }) {
                 
                 disabled={loading || selectedSeatIds.length === 0}
             >
-                {loading ? "İşleniyor..." : "⚡ Hızlı Satın Al (Sepetsiz)"}
+               {loading ? t('app.loading') : "⚡ " + t('eventDetail.buyNow')}
             </button>
             </div>
           </div>

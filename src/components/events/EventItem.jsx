@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import apiClient from '../../apiClient';
 import { toast } from 'react-toastify';
-
+import { useTranslation } from 'react-i18next';
 function EventItem({ event, onSelect, onFavoriteToggle, isFavorite = false }) {
   const [isLiked, setIsLiked] = useState(isFavorite);
   const [loading, setLoading] = useState(false);
+  const { t } = useTranslation();
 
   useEffect(() => {
   if (isFavorite === true) {
@@ -78,13 +79,13 @@ function EventItem({ event, onSelect, onFavoriteToggle, isFavorite = false }) {
           </p>
 
           <div className="mt-auto">
-            <h6 className="fw-bold text-black mb-3">Fiyat: {event.price} ₺</h6>
+            <h6 className="fw-bold text-black mb-3">{t('eventDetail.price')}: {event.price} ₺</h6>
             
             <button 
               className="btn btn-primary w-100 fw-bold"
               onClick={() => onSelect(event)} 
             >
-              İncele
+              {t('eventList.inspectBtn')}
             </button>
           </div>
         </div>

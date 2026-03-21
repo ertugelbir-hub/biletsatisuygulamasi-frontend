@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-
+import { useTranslation } from 'react-i18next';
 function SearchBar({ onSearch }) {
+  const { t } = useTranslation();
   const [filters, setFilters] = useState({
+    
     q: "",      // Arama kelimesi (Backend 'q' bekliyor)
     city: "",   // Şehir
     type: ""    // Tür
@@ -52,7 +54,7 @@ function SearchBar({ onSearch }) {
               value={filters.city}
               onChange={handleChange}
             >
-              <option value="">Tüm Şehirler</option>
+              <option value="">{t('search.allCities')}</option>
               <option value="İstanbul">İstanbul</option>
               <option value="Ankara">Ankara</option>
               <option value="İzmir">İzmir</option>
@@ -68,7 +70,7 @@ function SearchBar({ onSearch }) {
               value={filters.type}
               onChange={handleChange}
             >
-              <option value="">Tüm Etkinlikler</option>
+              <option value="">{t('search.allEvents')}</option>
               <option value="Concert">Konser</option>
               <option value="Theatre">Tiyatro</option>
               <option value="Cinema">Sinema</option>
@@ -78,7 +80,7 @@ function SearchBar({ onSearch }) {
 
           {/* Butonlar */}
           <div className="col-md-2 d-flex gap-2">
-            <button type="submit" className="btn btn-primary w-100">Ara</button>
+            <button type="submit" className="btn btn-primary w-100">{t('search.button')}</button>
             {(filters.q || filters.city || filters.type) && (
                 <button type="button" onClick={handleClear} className="btn btn-outline-secondary">X</button>
             )}

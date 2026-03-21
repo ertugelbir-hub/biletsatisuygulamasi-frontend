@@ -2,10 +2,12 @@ import React, { useEffect, useState } from 'react';
 import apiClient from '../../apiClient'; // App.jsx'in konumuna göre ../../ ayarladık
 import EventItem from './EventItem'; // Aynı klasörde olduğu için direkt çağırıyoruz
 import { toast } from 'react-toastify';
+import { useTranslation } from 'react-i18next';
 
 function Favorites({ onEventSelect }) {
   const [favorites, setFavorites] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { t } = useTranslation();
 
   // Favorileri Backend'den Çek
   const fetchFavorites = async () => {
@@ -38,12 +40,12 @@ function Favorites({ onEventSelect }) {
 
   return (
     <div className="container mt-4">
-      <h2 className="text-white mb-4 border-bottom border-secondary pb-2">❤️ Favori Etkinliklerim</h2>
+      <h2 className="text-white mb-4 border-bottom border-secondary pb-2">{t('favoritesPage.title')}</h2>
       
       {favorites.length === 0 ? (
         <div className="alert alert-secondary text-center py-5">
-          <h4>Henüz favori etkinliğin yok 🤷‍♂️</h4>
-          <p>Etkinliklere göz atıp beğendiklerini kalp butonuna basarak buraya ekleyebilirsin!</p>
+          <h4>{t('favoritesPage.emptyTitle')}</h4>
+          <p>{t('favoritesPage.emptyDesc')}</p>
         </div>
       ) : (
         <div className="row g-4">

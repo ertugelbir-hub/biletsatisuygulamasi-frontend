@@ -2,11 +2,14 @@ import React, { useEffect, useState } from 'react';
 import apiClient from '../../apiClient';
 import SockJS from 'sockjs-client';
 import { Stomp } from '@stomp/stompjs';
+import { useTranslation } from 'react-i18next';
 function SeatMap({ eventId, onSelectionChange }) {
   const [seats, setSeats] = useState([]);
   const [selectedIds, setSelectedIds] = useState([]);
   const [loading, setLoading] = useState(true);
   const [timeLeft, setTimeLeft] = useState(null);
+   const { t } = useTranslation();
+  
 
   const parseHoldDate = (d) => {
     if (!d) return null;
@@ -169,11 +172,11 @@ function SeatMap({ eventId, onSelectionChange }) {
     } catch (error) {
         console.error("Rezerve hatası:", error);
         // Hata mesajını backend'den gelen cevaba göre göster [cite: 18]
-        alert(error.response?.data || "Koltuk rezerve edilemedi! Başkası kapmış olabilir.");
+        alert(error.response?.data || t('seatMap.reserveError'));
     }
   };
 
-  if (loading) return <div className="text-white">Koltuklar yükleniyor...</div>;
+  if (loading) return <div className="text-white">{t('seatMap.loading')}</div>;
 
   // 4. Koltukları Sıralara Göre Grupla (A: [s1, s2], B: [s3, s4]...)
   const rows = {};
@@ -185,15 +188,15 @@ function SeatMap({ eventId, onSelectionChange }) {
  return (
     <div className="card bg-dark border-secondary mb-4">
       <div className="card-header text-white border-secondary">
-        <h5 className="mb-0">💺 Sahne / Koltuk Seçimi</h5>
+        <h5 className="mb-0">{t('eventDetail.stageSelection')}</h5>
       </div>
       <div className="card-body">
         
         <div className="w-100 bg-secondary text-white text-center py-2 mb-4 rounded" style={{ letterSpacing: '5px' }}>
-            SAHNE
+            {t('eventDetail.stage')}
             {timeLeft && (
             <div className="alert alert-warning text-center fw-bold shadow-sm border-warning mb-4 py-2" style={{ letterSpacing: '2px' }}>
-                <span className="fs-5">⏱️ Rezervasyon süreniz: </span>
+                <span className="fs-5">⏱️ {t('seatMap.timeLimit')}</span>
                 <span className="text-danger fs-3 ms-2">{timeLeft}</span>
             </div>
         )}
@@ -231,7 +234,7 @@ function SeatMap({ eventId, onSelectionChange }) {
                       style={{ width: '40px', height: '40px', fontWeight: 'bold' }}
                       onClick={() => handleSeatClick(seat)}
                       disabled={isSold || (isHeld && !isSelected)}
-                      title={isSold ? "Dolu" : isHeld ? "Rezerve" : `${rowName}-${seat.seatNumber}`}
+                      title={isSold ? t('eventDetail.full') : isHeld ? t('eventDetail.reserved') : `${rowName}-${seat.seatNumber}`}
                     >
                       {seat.seatNumber}
                     </button>
@@ -244,10 +247,10 @@ function SeatMap({ eventId, onSelectionChange }) {
 
         {/* Legend / Bilgilendirme */}
         <div className="d-flex justify-content-center gap-4 mt-4 small text-white">
-            <div className="d-flex align-items-center gap-1"><div className="bg-light border rounded" style={{width: 15, height: 15}}></div> Boş</div>
-            <div className="d-flex align-items-center gap-1"><div className="bg-success rounded" style={{width: 15, height: 15}}></div> Seçili</div>
-            <div className="d-flex align-items-center gap-1"><div className="bg-warning rounded" style={{width: 15, height: 15}}></div> Rezerve</div>
-            <div className="d-flex align-items-center gap-1"><div className="bg-danger rounded" style={{width: 15, height: 15}}></div> Dolu</div>
+            <div className="d-flex align-items-center gap-1"><div className="bg-light border rounded" style={{width: 15, height: 15}}></div> {t('eventDetail.empty')}</div>
+            <div className="d-flex align-items-center gap-1"><div className="bg-success rounded" style={{width: 15, height: 15}}></div> {t('eventDetail.selected')}</div>
+            <div className="d-flex align-items-center gap-1"><div className="bg-warning rounded" style={{width: 15, height: 15}}></div> {t('eventDetail.reserved')}</div>
+            <div className="d-flex align-items-center gap-1"><div className="bg-danger rounded" style={{width: 15, height: 15}}></div> {t('eventDetail.full')}</div>
         </div>
       </div>
     </div>

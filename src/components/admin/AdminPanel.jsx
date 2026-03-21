@@ -8,11 +8,13 @@ import UserManager from './UserManager';
 import { toast } from 'react-toastify';
 import EventAnalysisModal from './EventAnalysisModal';
 import { getErrorMessage } from "../../utils/errorHelper";
+import { useTranslation } from 'react-i18next';
 function AdminPanel({ onBack }) {
   const [activeTab, setActiveTab] = useState("list");
   const [events, setEvents] = useState([]);  
   const [editingEvent, setEditingEvent] = useState(null); // Düzenlenecek veri
   const [analysisId, setAnalysisId] = useState(null); // Hangi etkinlik analiz ediliyor?
+    const { t } = useTranslation();
 
   // --- API İŞLEMLERİ ---
   const fetchEvents = async () => {
@@ -63,8 +65,8 @@ function AdminPanel({ onBack }) {
     <div className="container text-white pb-5">
       {/* Header */}
       <div className="d-flex align-items-center mb-4">
-          <button onClick={onBack} className="btn btn-outline-secondary me-3">← Çıkış</button>
-          <h2 className="mb-0">👔 Yönetici Paneli</h2>
+          <button onClick={onBack} className="btn btn-outline-secondary me-3">{t('admin.exit')}</button>
+          <h2 className="mb-0">{t('admin.title')}</h2>
       </div>   
 
       {/* Sekmeler */}
@@ -74,7 +76,7 @@ function AdminPanel({ onBack }) {
             className={`nav-link ${activeTab === "list" ? "active bg-dark text-warning border-secondary border-bottom-0" : "text-secondary"}`} 
             onClick={() => { setActiveTab("list"); setEditingEvent(null); }}
           >
-            📋 Liste
+            {t('admin.tabs.list')}
             
           </button>       
         </li>
@@ -83,7 +85,7 @@ function AdminPanel({ onBack }) {
             className={`nav-link ${activeTab === "form" ? "active bg-dark text-warning border-secondary border-bottom-0" : "text-secondary"}`} 
             onClick={() => { setEditingEvent(null); setActiveTab("form"); }}
           >
-            ➕ Yeni Ekle
+            ➕ {t('admin.tabs.addNew')}
           </button>
         </li>
         <li className="nav-item">
@@ -91,7 +93,7 @@ function AdminPanel({ onBack }) {
             className={`nav-link ${activeTab === "reports" ? "active bg-dark text-warning border-secondary border-bottom-0" : "text-secondary"}`} 
             onClick={() => setActiveTab("reports")}
           >
-            📊 Raporlar
+            📊 {t('admin.tabs.reports')}
           </button>
         </li>
         <li className="nav-item">
@@ -99,7 +101,7 @@ function AdminPanel({ onBack }) {
         className={`nav-link ${activeTab === "tickets" ? "active bg-dark text-warning border-secondary border-bottom-0" : "text-secondary"}`} 
         onClick={() => setActiveTab("tickets")}
       >
-        🎫 Biletler
+        🎫 {t('admin.tabs.tickets')}
       </button>
     </li>
     <li className="nav-item">
@@ -107,7 +109,7 @@ function AdminPanel({ onBack }) {
         className={`nav-link ${activeTab === "users" ? "active bg-dark text-warning border-secondary border-bottom-0" : "text-secondary"}`} 
         onClick={() => setActiveTab("users")}
       >
-        👥 Üyeler
+        👥 {t('admin.tabs.users')}
       </button>
     </li>
       </ul>
