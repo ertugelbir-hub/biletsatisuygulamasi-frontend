@@ -186,5 +186,9 @@
     "reserveError": "Platz konnte nicht reserviert werden! Vielleicht schon vergeben.",
     "timeLimit": "Verbleibende Reservierungszeit: "
   }
+},
+  "errors": {
+    "rateLimit": "Zu viele Anfragen! Bitte warten Sie eine Minute."
+  
   }
 }

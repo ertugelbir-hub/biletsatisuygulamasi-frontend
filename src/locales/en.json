@@ -186,5 +186,9 @@
     "reserveError": "Seat could not be reserved! Someone else might have taken it.",
     "timeLimit": "Reservation time left: "
   }
+},
+  "errors": {
+    "rateLimit": "You are sending too many requests! Please wait a minute."
+  
   }
 }

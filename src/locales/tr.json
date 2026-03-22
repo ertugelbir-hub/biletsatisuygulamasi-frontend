@@ -186,6 +186,10 @@
     "reserveError": "Koltuk rezerve edilemedi! Başkası kapmış olabilir.",
     "timeLimit": "Rezervasyon süreniz: "
   }
-  }
+},
+  "errors": {
+    "rateLimit": "Aga çok hızlısın, biraz yavaşla! Lütfen 1 dakika bekle."
+    }
+  
   
 }
