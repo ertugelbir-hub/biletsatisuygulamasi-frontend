@@ -1,27 +1,29 @@
 import React, { useEffect, useState } from 'react';
 import apiClient from '../../apiClient';
 import UserHistoryModal from './UserHistoryModal';
+import { useTranslation } from 'react-i18next';
 
 function UserManager() {
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
+  const { t } = useTranslation();
   useEffect(() => {
     apiClient.get("/api/users")
       .then(res => setUsers(res.data))
       .catch(err => console.error(err));
   }, []);
 
-  return (
+ return (
     <div className="table-responsive">
-      <h4 className="text-warning mb-3">👥 Kayıtlı Üyeler</h4>
-      <table className="table table-dark table-hover border-secondary">
+      <h4 className="text-warning mb-3">👥 {t('admin.users.title', 'Kayıtlı Üyeler')}</h4>
+      <table className="table table-dark table-hover border-secondary align-middle">
         <thead>
           <tr>
             <th>ID</th>
-            <th>Kullanıcı Adı</th>
-            <th>Email</th>
-            <th>Rol</th>
-            <th className="text-end">İşlemler</th>
+            <th>{t('auth.username', 'Kullanıcı Adı')}</th>
+            <th>{t('admin.users.email', 'Email')}</th>
+            <th>{t('admin.users.role', 'Rol')}</th>
+            <th className="text-end">{t('admin.list.actions', 'İşlemler')}</th>
           </tr>
         </thead>
         <tbody>
@@ -35,18 +37,17 @@ function UserManager() {
                   {u.role}
                 </span>
               </td>
-              <td className="text-end">{/* GEÇMİŞ BUTONU */}
+              <td className="text-end">
                 <button 
                   className="btn btn-sm btn-outline-info"
                   onClick={() => setSelectedUser(u.username)}>
-                  📜 Geçmiş
+                  📜 {t('admin.users.historyBtn', 'Geçmiş')}
                 </button>
               </td>
             </tr>
           ))}
         </tbody>
-      </table>
-      {/* MODAL: Eğer bir kullanıcı seçildiyse göster */}
+      </table>      
       {selectedUser && (
         <UserHistoryModal 
           username={selectedUser} 

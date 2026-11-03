@@ -1,17 +1,19 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 function EventTable({ events, onEdit, onDelete, onAnalyze }) {
+  const { t } = useTranslation();
   return (
     <div className="table-responsive">
       <table className="table table-dark table-hover border-secondary">
         <thead>
           <tr>
-            <th>ID</th>
-            <th>Başlık</th>
-            <th>Şehir</th>
-            <th>Tarih</th>
-            <th>Fiyat</th>
-            <th className="text-end">İşlemler</th>
+            <th>{t('admin.list.id', 'ID')}</th>
+            <th>{t('admin.list.title', 'Başlık')}</th>
+            <th>{t('admin.list.city', 'Şehir')}</th>
+            <th>{t('admin.list.date', 'Tarih')}</th>
+            <th>{t('admin.list.price', 'Fiyat')}</th>
+            <th className="text-end">{t('admin.list.actions', 'İşlemler')}</th>
           </tr>
         </thead>
         <tbody>
@@ -46,7 +48,7 @@ function EventTable({ events, onEdit, onDelete, onAnalyze }) {
             </tr>
           ))}
           {events.length === 0 && (
-            <tr><td colSpan="6" className="text-center py-4 text-muted">Kayıtlı etkinlik yok.</td></tr>
+            <tr><td colSpan="6" className="text-center py-4 text-muted">{t('eventList.notFound', 'Kayıtlı etkinlik yok.')}</td></tr>
           )}
         </tbody>
       </table>

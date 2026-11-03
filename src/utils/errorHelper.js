@@ -1,25 +1,30 @@
-// Backend'den gelen hatayı analiz edip okunabilir metin döndürür
+// Backendden gelen hatayı analiz edip okunabilir metin döndürür
+import i18n from '../i18n';
 export const getErrorMessage = (error) => {
   const resData = error.response?.data;
 
-  // 1. Backend hiç cevap vermediyse (Sunucu kapalıysa)
   if (!resData) {
-    return "Sunucuya erişilemiyor veya bilinmeyen bir hata oluştu.";
+    return i18n.t('toasts.serverUnreachable');
+  }
+    if (error.response.status === 429) {
+    return null;
+  }
+  // Yetkilendirme / Giriş hatası
+  if (error.response.status === 401) {
+    return i18n.t('toasts.invalidCredentials');
   }
 
-  // 2. Validasyon Hatası mı? (Liste döner)
-  // Backend'deki GlobalExceptionHandler: map.put("details", ...)
+  // Validiation
   if (resData.details && Array.isArray(resData.details)) {
-    // Örn: "Şifre en az 4 karakter olmalı | Email formatı hatalı"
     return resData.details.map(err => err.message).join(" | ");
   }
 
-  // 3. Normal Hata Mesajı mı?
-  // Backend: map.put("message", ...)
+  // Normal Hata Mesajı
   if (resData.message) {
     return resData.message;
   }
 
-  // 4. Hiçbiri değilse (Fallback)
-  return "Beklenmedik bir hata oluştu.";
+
+  // Hiçbiri değilse
+  return i18n.t('toasts.unexpectedError');
 };

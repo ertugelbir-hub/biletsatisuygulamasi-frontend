@@ -3,6 +3,8 @@ import apiClient from '../../apiClient';
 import SockJS from 'sockjs-client';
 import { Stomp } from '@stomp/stompjs';
 import { useTranslation } from 'react-i18next';
+import './SeatMap.css';
+import { toast } from 'react-toastify';
 function SeatMap({ eventId, onSelectionChange }) {
   const [seats, setSeats] = useState([]);
   const [selectedIds, setSelectedIds] = useState([]);
@@ -14,14 +16,13 @@ function SeatMap({ eventId, onSelectionChange }) {
   const parseHoldDate = (d) => {
     if (!d) return null;
     
-    // Gelen metnin sonuna 'Z' (UTC) ekleyerek tarayıcıya "Bu saat İngiltere saatidir, sen bunu Türkiye'ye çevir" diyoruz.
+    // Yabancı saati türk saatine çevirme
     if (typeof d === 'string') {
         return new Date(d.endsWith('Z') ? d : d + 'Z');
     }
     
     return new Date(d);
   };
-  // 1. Koltukları Backend'den Çek
   useEffect(() => {
     const fetchSeats = async () => {
       try {
@@ -36,36 +37,31 @@ function SeatMap({ eventId, onSelectionChange }) {
     fetchSeats();
   }, [eventId]);
 
-  // 2. ⚡ CANLI BAĞLANTI (Websocket) 
-  useEffect(() => {
-    // Backend'deki endpoint ile aynı olmalı (WebSocketConfig.java'da /ws tanımlıysa)
+  // Websocket
+  useEffect(() => {    
     const socket = new SockJS('http://localhost:8080/ws'); 
     const stompClient = Stomp.over(socket);
     stompClient.debug = () => {};
 
-    // Bağlan
-    stompClient.connect({}, () => {
-        console.log("🟢 Canlı Koltuk Takibi Başladı");
-
-        // Backend'den gelen "/topic/events/{id}/seats" kanalını dinle
+      stompClient.connect({}, () => {
+       /* console.log("Canlı Koltuk Takibi Başladı"); */
+                
         stompClient.subscribe(`/topic/events/${eventId}/seats`, (message) => {     
             try {
                 const incomingData = JSON.parse(message.body);               
-                console.log("📡 BACKEND'DEN CANLI MESAJ GELDİ:", incomingData);
+            /*    console.log("BACKEND'DEN CANLI MESAJ GELDİ:", incomingData); */
                 
 
                 // Backend bazen liste gönderiyor, bazen tek obje. Biz hepsini listeye çevirelim ki garanti olsun:
                 const updatedSeatsList = Array.isArray(incomingData) ? incomingData : [incomingData];
 
-                setSeats(prevSeats => {
-                    // Mevcut koltuk listesini dönüyoruz
-                    return prevSeats.map(seat => {
-                        // Şu anki koltuk (seat), gelen güncellemeler listesinde (updatedSeatsList) var mı?
+                setSeats(prevSeats => {                   
+                    return prevSeats.map(seat => {                      
                         const matchingUpdate = updatedSeatsList.find(u => u.id === seat.id);
                         
-                        // Varsa güncelle, yoksa eski halini bırak
+                      
                         if (matchingUpdate) {                           
-                             return { ...seat, ...matchingUpdate };// Doğrudan sold=true yapıyoruz
+                             return { ...seat, ...matchingUpdate };
                         }
                         return seat;
                     });
@@ -83,28 +79,25 @@ function SeatMap({ eventId, onSelectionChange }) {
         if (stompClient && stompClient.connected) stompClient.disconnect();
     };
 }, [eventId]);
-// ⏱️ KRONOMETRE VE OTOMATİK SEPET TEMİZLİĞİ
-  useEffect(() => {
-    // Eğer sepet boşsa (hiç koltuk seçmediysek) sayacı kapat ve durdur
+// Kronometre sistemi
+  useEffect(() => {    
     if (selectedIds.length === 0) {
         setTimeLeft(null);
         return;
-    }
-
-    // Her 1000 milisaniyede (1 saniye) bir çalışacak döngü
+    }   
     const interval = setInterval(() => {
-        let activeSelections = []; // Süresi henüz BİTMEMİŞ koltukları tutacağız
-        let earliestExpiry = null; // En erken bitecek süreyi (sayacı ona göre kuracağız) bulacağız
+        let activeSelections = []; 
+        let earliestExpiry = null; 
 
-        // Seçtiğimiz her bir koltuğu kontrol edelim
+        // Koltuk kontrolü
         selectedIds.forEach(id => {
             const seat = seats.find(s => s.id === id);
             if (seat) {
                 const holdDate = parseHoldDate(seat.holdExpiresAt);
                 
-                // Eğer koltuğun süresi hala bitmemişse (gelecekteyse)
+                // Eğer koltuğun süresi hala bitmemişse
                 if (holdDate && holdDate > new Date()) {
-                    activeSelections.push(id); // Sepette tutmaya devam et
+                    activeSelections.push(id); 
                     
                     // En erken bitecek olan koltuğun süresini bul
                     if (!earliestExpiry || holdDate < earliestExpiry) {
@@ -114,20 +107,20 @@ function SeatMap({ eventId, onSelectionChange }) {
             }
         });
 
-        // EĞER TEMİZLİKÇİ ROBOT: Bir koltuğun süresi bittiyse onu sepetten (selectedIds) çıkar!
+        // Koltuğun süresi bittiyse temizleme 
         if (activeSelections.length !== selectedIds.length) {
-            setSelectedIds(activeSelections); // Kendi sepetimizi güncelle
-            onSelectionChange(activeSelections); // Sağ taraftaki Cart (Sepet) bileşenini güncelle
+            setSelectedIds(activeSelections); 
+            onSelectionChange(activeSelections, getSeatLabels(activeSelections));
         }
 
-        // EKRANA YAZDIRMA: Kalan süreyi dakika ve saniye olarak hesapla
+        // Ekrana kalan süreyi veren
         if (earliestExpiry) {
             const now = new Date();
-            const diff = earliestExpiry - now; // Kalan milisaniye
+            const diff = earliestExpiry - now; 
             
             if (diff > 0) {
-                const m = Math.floor(diff / 60000); // Dakikayı bul
-                const s = Math.floor((diff % 60000) / 1000); // Kalan saniyeyi bul
+                const m = Math.floor(diff / 60000); 
+                const s = Math.floor((diff % 60000) / 1000); 
                 // 9:5 yerine 09:05 yazsın diye padStart kullanıyoruz
                 setTimeLeft(`${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`);
             } else {
@@ -138,112 +131,193 @@ function SeatMap({ eventId, onSelectionChange }) {
         }
 
     }, 1000);
-
-    // Kullanıcı sayfadan çıkarsa veya sepet değişirse eski sayacı hafızadan sil (temizlik)
+  
     return () => clearInterval(interval);
   }, [selectedIds, seats, onSelectionChange]);
 
-  // 3. Koltuk Seçme/Bırakma Mantığı
+  const getSeatLabels = (ids) => {
+    return ids.map(id => {
+      const s = seats.find(item => item.id === id);
+      return s ? `${s.rowName}-${s.seatNumber}` : id;
+    });
+  };
+  
  const handleSeatClick = async (seat) => {
-    if (seat.isSold || seat.sold) return; // Doluysa işlem yapma [cite: 13, 14]
-
-    // A) Eğer koltuk zaten BİZİM tarafımızdan seçilmişse (Yeşilse) -> İPTAL ET (Unhold)
+    if (seat.isSold || seat.sold) return; 
+    
     if (selectedIds.includes(seat.id)) {
         try {
             await apiClient.post(`/api/tickets/events/${eventId}/seats/${seat.id}/unhold`);
             const newSelection = selectedIds.filter(id => id !== seat.id);
             setSelectedIds(newSelection);
-            onSelectionChange(newSelection); // Sağ taraftaki bilet sepetini güncelle [cite: 14]
+            onSelectionChange(newSelection, getSeatLabels(newSelection));
         } catch (error) {
-            console.error("Seçim iptal hatası:", error);
-        }
+    console.error("Rezerve hatası:", error);
+    const errorMsg = error.response?.data?.message || t('admin.seatMap.reserveError');
+    toast.error(errorMsg);
+}
         return;       
     } 
-
-    // B) Eğer koltuk boşsa -> REZERVE ET (Hold)
-    try {
-        // Backend'deki tam adres: /api/tickets/events/... [cite: 15]
+    
+  
+    try {      
         await apiClient.post(`/api/tickets/events/${eventId}/seats/${seat.id}/hold`);
         
         const newSelection = [...selectedIds, seat.id];
         setSelectedIds(newSelection);
-        onSelectionChange(newSelection); // Sağ taraftaki bilet sepetini güncelle [cite: 16]
+        onSelectionChange(newSelection, getSeatLabels(newSelection));
         
     } catch (error) {
-        console.error("Rezerve hatası:", error);
-        // Hata mesajını backend'den gelen cevaba göre göster [cite: 18]
-        alert(error.response?.data || t('seatMap.reserveError'));
+        console.error("Rezerve hatası:", error);       
+        toast.error(typeof error.response?.data === 'string' ? error.response.data : t('admin.seatMap.reserveError'));
     }
   };
 
-  if (loading) return <div className="text-white">{t('seatMap.loading')}</div>;
+if (loading) return <div className="text-white text-center py-4">{t('admin.seatMap.loading')}</div>;
 
-  // 4. Koltukları Sıralara Göre Grupla (A: [s1, s2], B: [s3, s4]...)
   const rows = {};
-  seats.forEach(seat => {
-    if (!rows[seat.rowName]) rows[seat.rowName] = [];
-    rows[seat.rowName].push(seat);
-  });
+ const rowNames = [...new Set(seats.map(s => s.rowName))];
+seats.forEach(seat => {
+  if (!rows[seat.rowName]) rows[seat.rowName] = [];
+  rows[seat.rowName].push(seat);
+});
+  const renderSeatButton = (seat, rowName) => {
+    const isSelected = selectedIds.includes(seat.id);
+    const isSold = seat.isSold || seat.sold;
+    const holdDate = parseHoldDate(seat.holdExpiresAt);
+    const isHeld = holdDate && holdDate > new Date();
 
- return (
-    <div className="card bg-dark border-secondary mb-4">
-      <div className="card-header text-white border-secondary">
-        <h5 className="mb-0">{t('eventDetail.stageSelection')}</h5>
-      </div>
-      <div className="card-body">
-        
-        <div className="w-100 bg-secondary text-white text-center py-2 mb-4 rounded" style={{ letterSpacing: '5px' }}>
-            {t('eventDetail.stage')}
-            {timeLeft && (
-            <div className="alert alert-warning text-center fw-bold shadow-sm border-warning mb-4 py-2" style={{ letterSpacing: '2px' }}>
-                <span className="fs-5">⏱️ {t('seatMap.timeLimit')}</span>
-                <span className="text-danger fs-3 ms-2">{timeLeft}</span>
-            </div>
+    let btnClass = "btn-outline-secondary text-white";
+    if (isSold) {
+      btnClass = "btn-danger disabled opacity-50";
+    } else if (isSelected) {
+      btnClass = "btn-success shadow";
+    } else if (isHeld) {
+      btnClass = "btn-warning text-dark shadow";
+    }
+
+    return (
+      <button
+        key={seat.id}
+        className={`btn btn-sm ${btnClass}`}
+        style={{
+          width: '38px',
+          height: '38px',
+          fontWeight: 'bold',
+          fontSize: '13px',
+          borderRadius: '8px',
+          transition: 'all 0.15s ease'
+        }}
+        onClick={() => handleSeatClick(seat)}
+        disabled={isSold || (isHeld && !isSelected)}
+        title={isSold ? t('eventDetail.full') : isHeld ? t('eventDetail.reserved') : `${rowName}-${seat.seatNumber}`}
+      >
+        {seat.seatNumber}
+      </button>
+    );
+  };
+return (
+    <div className="card bg-dark border-secondary mb-4 shadow-lg">
+      <div className="card-header bg-black text-white border-secondary py-3 d-flex justify-content-between align-items-center">
+        <h5 className="mb-0 fw-bold">{t('eventDetail.stageSelection')}</h5>
+        {timeLeft && (
+          <div className="badge bg-warning text-dark px-3 py-2 fs-6">
+            ⏱️ {t('admin.seatMap.timeLimit')}: <span className="fw-bolder text-danger">{timeLeft}</span>
+          </div>
         )}
+      </div>
+
+      <div className="card-body p-4">
+        {/* Sahne Çizgisi */}
+        <div className="text-center mb-5">
+          <div
+            className="mx-auto py-2 text-white fw-bold shadow-sm"
+            style={{
+              maxWidth: '520px',
+              letterSpacing: '8px',
+              backgroundColor: '#1e293b',
+              borderTop: '4px solid #6366f1',
+              borderRadius: '8px 8px 30px 30px',
+              color: '#94a3b8'
+            }}
+          >
+            {t('eventDetail.stage')}
+          </div>
         </div>
 
-        <div className="d-flex flex-column align-items-center gap-3">
-          {Object.keys(rows).sort().map(rowName => (
-            <div key={rowName} className="d-flex align-items-center gap-2">
-              <span className="text-muted fw-bold" style={{ width: '30px' }}>{rowName}</span>
-              
-              <div className="d-flex gap-2">
-                {rows[rowName].map(seat => {
-                  const isSelected = selectedIds.includes(seat.id);
-                  const isSold = seat.isSold || seat.sold;
-                  
-                  // Rezervasyon süresi kontrolü [cite: 24, 27]
-                  const holdDate = parseHoldDate(seat.holdExpiresAt);
-                  const isHeld = holdDate && holdDate > new Date();
+        {/* Tribün / Blok Başlıkları */}
+<div className="d-flex justify-content-center align-items-center text-muted small fw-bold mb-3" style={{ maxWidth: '640px', margin: '0 auto' }}>
+  <div className="text-center" style={{ flex: '3' }}>{t('seatMap.leftTribune')}</div>
+  <div style={{ width: '32px' }}></div>
+  <div className="text-center text-primary" style={{ flex: '4' }}>{t('seatMap.centerBlock')}</div>
+  <div style={{ width: '32px' }}></div>
+  <div className="text-center" style={{ flex: '3' }}>{t('seatMap.rightTribune')}</div>
+</div>
 
-                  // Renk Önceliği Mantığı [cite: 25, 26, 27, 28]
-                  let btnClass = "btn-outline-light"; // Varsayılan: Boş
-                  
-                  if (isSold) {
-                      btnClass = "btn-danger disabled"; // Kırmızı: Satıldı
-                  } else if (isSelected) {
-                      btnClass = "btn-success"; // Yeşil: Senin seçimin (En öncelikli)
-                  } else if (isHeld) {
-                      btnClass = "btn-warning"; // Sarı: Başkası tutuyor
-                  }
+       {/* KOLTUK SIRALARI VE AMFİ DÜZENİ */}
+<div className="d-flex flex-column align-items-center">
+  {rowNames.map((rowName, index) => {
+    const rowSeats = rows[rowName].sort((a, b) => a.seatNumber - b.seatNumber);
+    const leftBlock = rowSeats.filter(s => s.seatNumber <= 3);
+    const centerBlock = rowSeats.filter(s => s.seatNumber >= 4 && s.seatNumber <= 7);
+    const rightBlock = rowSeats.filter(s => s.seatNumber >= 8);
 
-                  return (
-                    <button
-                      key={seat.id}
-                      className={`btn btn-sm ${btnClass}`}
-                      style={{ width: '40px', height: '40px', fontWeight: 'bold' }}
-                      onClick={() => handleSeatClick(seat)}
-                      disabled={isSold || (isHeld && !isSelected)}
-                      title={isSold ? t('eventDetail.full') : isHeld ? t('eventDetail.reserved') : `${rowName}-${seat.seatNumber}`}
-                    >
-                      {seat.seatNumber}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
+    // Her 6 sırada bir koridor oluştur (6. sıradan sonra, 12. sıradan sonra vb.)
+    const showCorridor = index > 0 && index % 6 === 0;
+    const corridorNumber = index / 6;
+
+    return (
+      <React.Fragment key={rowName}>
+        {/* HER 6 SIRADA BİR DİNAMİK YATAY KORİDOR */}
+        {showCorridor && (
+          <div className="w-100 my-4 d-flex align-items-center justify-content-center">
+            <div className="horizontal-walkway d-flex align-items-center justify-content-between px-4 py-2 rounded text-muted small fw-bold">
+  <span className="opacity-75">◄ {t('seatMap.exitFoyer')}</span>
+  <span className="text-warning tracking-wider">
+  {corridorNumber}. {t('seatMap.corridor')}
+</span>
+  <span className="opacity-75">{t('seatMap.entranceEmergency')} ►</span>
+</div>
+          </div>
+        )}
+
+        {/* KOLTUK SIRASI (V-ŞEKLİNDE KANATLAR) */}
+        <div className="d-flex align-items-center justify-content-center mb-3 seat-row-line">
+          {/* Sol Sıra Harfi */}
+          <span className="text-secondary fw-bold text-center me-3" style={{ width: '24px' }}>
+            {rowName}
+          </span>
+
+          {/* 1. SOL KANAT */}
+          <div className="d-flex gap-2 p-1 rounded v-wing-left">
+            {leftBlock.map(seat => renderSeatButton(seat, rowName))}
+          </div>
+
+          {/* Dikey Koridor Boşluğu */}
+          <div className="vertical-aisle"></div>
+
+          {/* 2. ORTA SAHNE ÖNÜ BLOK */}
+          <div className="d-flex gap-2 p-1 rounded v-center-block">
+            {centerBlock.map(seat => renderSeatButton(seat, rowName))}
+          </div>
+
+          {/* Dikey Koridor Boşluğu */}
+          <div className="vertical-aisle"></div>
+
+          {/* 3. SAĞ KANAT */}
+          <div className="d-flex gap-2 p-1 rounded v-wing-right">
+            {rightBlock.map(seat => renderSeatButton(seat, rowName))}
+          </div>
+
+          {/* Sağ Sıra Harfi */}
+          <span className="text-secondary fw-bold text-center ms-3" style={{ width: '24px' }}>
+            {rowName}
+          </span>
         </div>
+      </React.Fragment>
+    );
+  })}
+</div>
 
         {/* Legend / Bilgilendirme */}
         <div className="d-flex justify-content-center gap-4 mt-4 small text-white">

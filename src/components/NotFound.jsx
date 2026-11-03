@@ -23,7 +23,7 @@ function NotFound({ onGoHome }) {
         🏠 Ana Sayfaya Dön
       </button>
 
-      {/* Süsleme (İsteğe bağlı) */}
+      {/* Süsleme */}
       <div className="mt-5 opacity-25">
         <span style={{ fontSize: "5rem" }}>🎫 👻</span>
       </div>

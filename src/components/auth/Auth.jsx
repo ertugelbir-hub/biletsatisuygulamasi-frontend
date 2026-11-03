@@ -5,10 +5,10 @@ import { toast } from 'react-toastify';
 import { getErrorMessage } from "../../utils/errorHelper";
 import { useTranslation } from 'react-i18next';
 function Auth({ onLoginSuccess }) {
-  const [isLogin, setIsLogin] = useState(true); // Giriş modunda mı, Kayıt modunda mı?
+  const [isLogin, setIsLogin] = useState(true); 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [email, setEmail] = useState(""); // Sadece kayıt için  
+  const [email, setEmail] = useState(""); 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
@@ -17,32 +17,27 @@ function Auth({ onLoginSuccess }) {
     e.preventDefault();
     setError("");
     setLoading(true);
-    await new Promise(r => setTimeout(r, 2000));//test
+    await new Promise(r => setTimeout(r, 2000));
 
-    // Backend Endpointlerini kontrol et (Controller yapına göre)
    const endpoint = isLogin ? "/api/auth/login" : "/api/auth/register";
     
     const payload = isLogin 
       ? { username, password } 
-      : { username, password, email, role: "USER" }; // Kayıtta email ve rol de gönderelim
+      : { username, password, email, role: "USER" }; 
 
     try {
       const response = await apiClient.post(endpoint, payload);
-      console.log("Backend Cevabı:", response); // <--- LOG 1
-
-      if (isLogin) {
-        // GİRİŞ BAŞARILI: Token'ı kaydet
-        // Backend'den dönen yapın { token: "..." } ise:
-        const token = response.data.token || response.data; // String dönerse direkt al
-        console.log("Gelen Token:", token); // <--- LOG 2
-        // YENİ KISIM: Token'ı çöz ve rolü al,
+      /* console.log("Backend Cevabı:", response); */
+      if (isLogin) {        
+        const token = response.data.token || response.data; 
+       /* console.log("Gelen Token:", token);    */  
         if (!token) {
             throw new Error("Backend'den Token gelmedi!");
         }
         let userRole = "USER";
        try {
             const decoded = jwtDecode(token);
-            console.log("Çözülen Token:", decoded); // <--- LOG 3
+          /*  console.log("Çözülen Token:", decoded); */
             
             if (decoded.role) {
                 userRole = decoded.role || "USER";
@@ -50,37 +45,35 @@ function Auth({ onLoginSuccess }) {
             
             } catch (decodeError) {
             console.error("Token çözülemedi:", decodeError);
-            // Token çözülemezse bile akışı bozmayalım, varsayılan role ile devam edelim
         }
         
-        if (rememberMe) {
-            // Kalıcı Hafıza (Beni Hatırla SEÇİLİ)
+        if (rememberMe) {           
             localStorage.setItem("token", token);
             localStorage.setItem("username", username);
             localStorage.setItem("role", userRole);
-        } else {
-            // Geçici Hafıza (Beni Hatırla SEÇİLİ DEĞİL)
+        } else {            
             sessionStorage.setItem("token", token);
             sessionStorage.setItem("username", username);
             sessionStorage.setItem("role", userRole);
         }
-        toast.success("👋 Hoşgeldin " + username);
-        onLoginSuccess(); // App.jsx'e haber ver
-      } else {
-        // KAYIT BAŞARILI: Giriş ekranına dön
-        toast.success("✅ Kayıt başarılı! Şimdi giriş yapabilirsin.");
+        toast.success(t('toasts.welcome', { username }));
+        onLoginSuccess();
+      } else {        
+        toast.success(t('toasts.registerSuccess'));
         setIsLogin(true);   
         setLoading(false);     
       }
       if (!isLogin) setLoading(false);
     } catch (err) {
       
-      console.error("LOGIN HATASI DETAYI:", err); // <--- LOG 4 (Gerçek hatayı burada göreceğiz)
+      console.error("LOGIN HATASI DETAYI:", err); 
       if (!err.response) {
           setError("Uygulama hatası: " + err.message);
       }else{
       const msg = getErrorMessage(err); 
-      toast.error(`❌ ${msg}`);
+      if (msg) {
+        toast.error(`❌ ${msg}`);
+      }
     }
       setLoading(false);
     }
@@ -88,9 +81,8 @@ function Auth({ onLoginSuccess }) {
 
 return (
     <div className="d-flex justify-content-center align-items-center" style={{ minHeight: "80vh" }}>
-      <div className="card bg-dark text-white border-secondary p-4 shadow-lg" style={{ width: "400px" }}>
-        
-        {/* YENİ: DİL SEÇİM BUTONLARI */}
+      <div className="card bg-dark text-white border-secondary p-4 shadow-lg" style={{ width: "400px" }}>        
+     
         <div className="d-flex justify-content-end mb-3">
           <div className="btn-group shadow-sm">
             <button type="button" className={`btn btn-sm ${i18n.language === 'tr' ? 'btn-light fw-bold' : 'btn-outline-light'}`} onClick={() => {i18n.changeLanguage('tr'),localStorage.setItem('user-language', 'tr');}}>TR</button>

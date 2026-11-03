@@ -3,6 +3,7 @@ import apiClient from "../../apiClient";
 import { toast } from 'react-toastify';
 import { getErrorMessage } from "../../utils/errorHelper";
 import { useTranslation } from 'react-i18next';
+import { downloadPdfTicket } from '../../utils/pdfHelper';
 function MyTickets({ onBack }) {
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -15,7 +16,7 @@ function MyTickets({ onBack }) {
       setTickets(response.data);
     } catch (err) {
       console.error("Biletler çekilemedi:", err);
-      toast.error("Biletlerin yüklenirken bir sorun oluştu.");
+      toast.error(t('toasts.ticketsLoadError'));
     } finally {
       setLoading(false);
     }
@@ -24,13 +25,12 @@ function MyTickets({ onBack }) {
      fetchMyTickets();
     }, []);
    const handleCancel = async (ticketId) => {
-    if (!window.confirm("Bu bileti iptal etmek istediğine emin misin?")) return;
+    if (!window.confirm(t('toasts.confirmAction'))) return;
 
     try {
       await apiClient.delete(`/api/tickets/${ticketId}`);
-      toast.success("✅ Bilet başarıyla iptal edildi.");
-      
-      // Listeyi yenile
+      toast.success(t('toasts.ticketCancelled'));
+         
       fetchMyTickets();
     } catch (error) {
       console.error("İptal hatası:", error);
@@ -77,7 +77,7 @@ function MyTickets({ onBack }) {
                 </p>
                 
                {ticket.event && (
-                   <div className="mb-3 small text-light opacity-75"> {/* Rengi açtık */}
+                   <div className="mb-3 small text-light opacity-75"> 
                     <div className="mb-1">📍 {ticket.event.city}</div>
                     <div>📅 {new Date(ticket.event.dateTime).toLocaleString("tr-TR")}</div>
                    </div>
@@ -98,18 +98,28 @@ function MyTickets({ onBack }) {
       {/* SAĞ: Kocaman Toplam Fiyat (Adet * Fiyat) */}
       <div className="text-end">
           <span className="text-secondary small d-block">{t('myTicketsPage.totalPaid')}</span>
-          <span className="text-warning fw-bold display-6" style={{ fontSize: '1.8rem' }}>
-              {/* ÇARPMA İŞLEMİ BURADA YAPILIYOR: */}
+          <span className="text-warning fw-bold display-6" style={{ fontSize: '1.8rem' }}>             
               { (ticket.quantity * (ticket.price || ticket.event.price)).toFixed(2) } ₺
           </span>
       </div>
   </div>
-                {/* İPTAL BUTONU */}
-                <button 
-                        onClick={() => handleCancel(ticket.id)} 
-                        className="btn btn-outline-danger w-100 btn-sm">
-                        {t('myTicketsPage.cancelBtn')}
-                        </button>
+                {/*PDF İndir ve İptal Butonları */}
+<div className="d-flex gap-2">
+  <button 
+    onClick={() => downloadPdfTicket(ticket.id)} 
+    className="btn btn-outline-info w-50 btn-sm d-flex align-items-center justify-content-center gap-1 shadow-sm"
+    title="QR Kodlu Bilet PDF'ini İndir"
+  >
+    <span>📄</span> <span>{t('myTicketsPage.downloadPdf', 'PDF İndir')}</span>
+  </button>
+
+  <button 
+    onClick={() => handleCancel(ticket.id)} 
+    className="btn btn-outline-danger w-50 btn-sm"
+  >
+    {t('myTicketsPage.cancelBtn')}
+  </button>
+</div>
              </div>
               </div>
             </div>

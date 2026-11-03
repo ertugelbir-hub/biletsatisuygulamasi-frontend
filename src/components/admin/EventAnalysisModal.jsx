@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import apiClient from '../../apiClient';
+import { useTranslation } from 'react-i18next';
 
 function EventAnalysisModal({ eventId, onClose }) {
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(true);
+  const { t } = useTranslation();
 
   useEffect(() => {
     const fetchAnalysis = async () => {
       try {
-        // Backend: GET /api/reports/sales/alltime?eventId=1
+        
         const response = await apiClient.get("/api/reports/sales/alltime", {
           params: { eventId }
         });
@@ -29,7 +31,7 @@ function EventAnalysisModal({ eventId, onClose }) {
         <div className="modal-content bg-dark text-white border-info">
           
           <div className="modal-header border-secondary">
-            <h5 className="modal-title text-info">📈 Etkinlik Analizi</h5>
+            <h5 className="modal-title text-info">📈 {t('modals.analysisTitle')}</h5>
             <button type="button" className="btn-close btn-close-white" onClick={onClose}></button>
           </div>
 
@@ -41,26 +43,26 @@ function EventAnalysisModal({ eventId, onClose }) {
                 <h4 className="mb-4">{report.title}</h4>
                 
                 <div className="row g-3">
-                  {/* Toplam Ciro */}
+                  {}
                   <div className="col-12">
                     <div className="p-3 border border-success rounded bg-success bg-opacity-10">
-                      <small className="text-success fw-bold">TOPLAM CİRO</small>
+                      <small className="text-success fw-bold">{t('modals.totalRevenue')}</small>
                       <h2 className="mb-0 text-success">{report.revenue.toLocaleString('tr-TR')} ₺</h2>
                     </div>
                   </div>
 
-                  {/* Satılan */}
+                  {}
                   <div className="col-6">
                     <div className="p-3 border border-secondary rounded">
-                      <small className="text-secondary">SATILAN BİLET</small>
+                      <small className="text-secondary">{t('modals.soldTickets')}</small>
                       <h3>{report.sold}</h3>
                     </div>
                   </div>
 
-                  {/* Kalan */}
+                  {}
                   <div className="col-6">
                     <div className="p-3 border border-secondary rounded">
-                      <small className="text-secondary">KALAN KOLTUK</small>
+                      <small className="text-secondary">{t('modals.remainingSeats')}</small>
                       <h3>{report.remaining} / {report.totalSeats}</h3>
                     </div>
                   </div>
@@ -72,7 +74,7 @@ function EventAnalysisModal({ eventId, onClose }) {
                         role="progressbar" 
                         style={{ width: `${(report.sold / report.totalSeats) * 100}%` }}
                       >
-                        Doluluk: %{Math.round((report.sold / report.totalSeats) * 100)}
+                        {t('modals.occupancy', { rate: Math.round((report.sold / report.totalSeats) * 100) })}
                       </div>
                     </div>
                   </div>
@@ -80,12 +82,12 @@ function EventAnalysisModal({ eventId, onClose }) {
                 </div>
               </div>
             ) : (
-              <p className="text-danger">Veri bulunamadı.</p>
+              <p className="text-danger">{t('modals.noData')}</p>
             )}
           </div>
 
           <div className="modal-footer border-secondary">
-            <button type="button" className="btn btn-secondary" onClick={onClose}>Kapat</button>
+            <button type="button" className="btn btn-secondary" onClick={onClose}>{t('modals.close')}</button>
           </div>
 
         </div>

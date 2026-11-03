@@ -2,45 +2,50 @@ import React, { useState } from 'react';
 import { useCart } from '../../context/CartContext';
 import PaymentModal from '../common/PaymentModal';
 import { toast } from 'react-toastify';
-import apiClient from "../../apiClient"; // API isteği için
-import { useNavigate } from 'react-router-dom';
+import apiClient from "../../apiClient"; 
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
+import PurchaseSuccessModal from '../common/PurchaseSuccessModal';
 
-const CartPage = ({ onBack }) => {
+const CartPage = ({ onBack, onSelectEvent }) => {
   const { cartItems, removeFromCart, clearCart, totalPrice } = useCart();
   const [showPayment, setShowPayment] = useState(false);
   const navigate = useNavigate();
   const { t } = useTranslation();
-
-  // Sepetteki TÜM ürünleri tek tek satın alan fonksiyon
+  const [purchasedTickets, setPurchasedTickets] = useState(null);
+const [showSuccessModal, setShowSuccessModal] = useState(false);
   const handleCheckout = async () => {
-    try {
-      // Sepetteki her kalem için backend'e istek at
-      // (Gerçek projede 'batch' endpoint olur ama şimdilik döngüyle yapalım)
+    try {      
+      const ticketsCreated = []
       for (const item of cartItems) {
-        await apiClient.post("/api/tickets/purchase", {
+        const res = await apiClient.post("/api/tickets/purchase", {
           eventId: item.eventId,
           seatIds: item.seatIds,
           quantity: item.quantity,
           couponCode: item.couponCode || ""
         });
+        if (res.data) {
+          ticketsCreated.push(res.data);
+        }
       }
       
-      toast.success("🎉 Ödeme başarılı! İyi eğlenceler.");
-      clearCart(); // Sepeti boşalt
-      navigate('/my-tickets'); // Biletlerime git
+      toast.success(t('toasts.paymentSuccess'));    
+      setPurchasedTickets(ticketsCreated.flat());
+      clearCart(); 
+      setShowSuccessModal(true);
+      
 
     } catch (error) {
       console.error(error);
-      toast.error("Ödeme sırasında bir hata oluştu: " + (error.response?.data?.message || "Bilinmeyen hata"));
+      const errMsg = error.response?.data?.message || t('toasts.unknownError');
+      toast.error(t('toasts.paymentError', { msg: errMsg }));
     }
   };
 
- if (cartItems.length === 0) {
+ if (cartItems.length === 0 && !showSuccessModal) {
     return (
       <div className="text-center text-white mt-5">
-        <h2>{t('cartPage.empty')}</h2>
-        {/* 👇 BU BUTONU EKLEDİK */}
+        <h2>{t('cartPage.empty')}</h2>       
         <button onClick={onBack} className="btn btn-primary mt-3">
           {t('cartPage.backToEvents')}
         </button>
@@ -49,24 +54,38 @@ const CartPage = ({ onBack }) => {
   }
 
   return (
-    <div className="container mt-5 text-white">
-      <h2 className="mb-4">🛒 Alışveriş Sepetim</h2>
-      <button onClick={onBack} className="btn btn-outline-light">
-          ← Alışverişe Devam Et
+    <div className="container mt-4 text-white">
+      {/* Üst Bar: İç İçe Geçmeyi Önleyen Şık Başlık Düzeni */}
+      <div className="d-flex align-items-center justify-content-between mb-4 border-bottom border-secondary pb-3">
+        <div className="d-flex align-items-center gap-3">
+          <button onClick={onBack} className="btn btn-outline-secondary">
+             {t('common.back', 'Geri')}
+          </button>
+          <h2 className="mb-0">🛒 {t('app.cart', 'Alışveriş Sepetim')}</h2>
+        </div>
+        <button onClick={onBack} className="btn btn-outline-info btn-sm">
+          {t('cartPage.backToEvents', 'Alışverişe Devam Et')} ↗
         </button>
+      </div>
       
-      <div className="row">
-        {/* LİSTE */}
+      <div className="row"> 
         <div className="col-md-8">
           {cartItems.map((item) => (
             <div key={item.id} className="card bg-dark border-secondary mb-3 shadow-sm">
               <div className="card-body d-flex justify-content-between align-items-center">
                 <div>
-                  <h5 className="card-title text-info">{item.eventTitle}</h5>
+                  <h5 className="card-title text-info"
+                    style={{ cursor: 'pointer' }}
+                    onClick={() => onSelectEvent && onSelectEvent(item.eventId)}
+                    >
+                    {item.eventTitle}
+                  </h5>
                   <p className="mb-0 text-secondary small">
-                    {t('cartPage.seats')} {item.seatIds.join(", ")} | {t('cartPage.qty')} {item.quantity}
-                    {item.couponCode && <span className="badge bg-warning text-dark ms-2">{t('cartPage.coupon')} {item.couponCode}</span>}
-                  </p>
+                  {t('cartPage.seats')}{' '}
+                  {(item.seatLabels && item.seatLabels.length > 0 ? item.seatLabels : item.seatIds).join(", ")} |{' '}
+                  {t('cartPage.qty')} {item.quantity}
+                  {item.couponCode && <span className="badge bg-warning text-dark ms-2">{t('cartPage.coupon')} {item.couponCode}</span>}
+                 </p>
                 </div>
                 <div className="d-flex align-items-center gap-3">
                   <span className="fs-5 fw-bold">{item.price.toFixed(2)} ₺</span>
@@ -76,8 +95,7 @@ const CartPage = ({ onBack }) => {
             </div>
           ))}
         </div>
-
-        {/* ÖZET KUTUSU */}
+    
         <div className="col-md-4">
           <div className="card bg-secondary bg-opacity-25 text-white p-3">
             <h4>{t('cartPage.summaryTitle')}</h4>
@@ -96,8 +114,7 @@ const CartPage = ({ onBack }) => {
           </div>
         </div>
       </div>
-
-      {/* ÖDEME MODALI */}
+    
       {showPayment && (
         <PaymentModal 
           totalAmount={totalPrice.toFixed(2)}
@@ -108,7 +125,17 @@ const CartPage = ({ onBack }) => {
           }}
         />
       )}
+      {showSuccessModal && (
+  <PurchaseSuccessModal 
+    ticketData={purchasedTickets}
+    onClose={() => {
+      setShowSuccessModal(false);
+      onBack();
+    }}
+  />
+)}
     </div>
+    
   );
 };
 

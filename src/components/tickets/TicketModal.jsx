@@ -1,18 +1,15 @@
 import { useState, useEffect } from "react";
 
 function TicketModal({ event, onClose, onConfirm }) {
-  // Seçilen koltukların ID'lerini tutuyoruz
   const [selectedSeats, setSelectedSeats] = useState([]);
   const [isProcessing, setIsProcessing] = useState(false);
   
-  // Rastgele dolu koltuklar üretelim (Simülasyon)
-  // Gerçek hayatta bu backend'den gelirdi
+  // Simülasyon
   const [occupiedSeats, setOccupiedSeats] = useState([]);
 
   useEffect(() => {
-    // Sayfa açılınca rastgele 5-10 koltuğu "Dolu" işaretle
     const randomOccupied = [];
-    const totalSeats = 40; // Ekrana 40 koltuk çizeceğiz
+    const totalSeats = 40; 
     for(let i=0; i<totalSeats; i++) {
       if(Math.random() < 0.3) { // %30 ihtimalle dolu olsun
         randomOccupied.push(i);
@@ -22,13 +19,11 @@ function TicketModal({ event, onClose, onConfirm }) {
   }, []);
 
   const toggleSeat = (index) => {
-    if (occupiedSeats.includes(index)) return; // Doluysa işlem yapma
+    if (occupiedSeats.includes(index)) return; 
 
     if (selectedSeats.includes(index)) {
-      // Zaten seçiliyse çıkar
       setSelectedSeats(selectedSeats.filter(id => id !== index));
-    } else {
-      // Seçili değilse ekle (Maksimum 10 bilet sınırı koyalım)
+    } else {   
       if (selectedSeats.length < 10) {
         setSelectedSeats([...selectedSeats, index]);
       }
@@ -40,15 +35,13 @@ function TicketModal({ event, onClose, onConfirm }) {
     if (selectedSeats.length === 0) return;
 
     setIsProcessing(true);
-    await new Promise(resolve => setTimeout(resolve, 1500)); // Yapay gecikme
-    
-    // Seçilen koltuk sayısını gönderiyoruz
+    await new Promise(resolve => setTimeout(resolve, 1500)); // Yapay gecikme    
+
     await onConfirm(selectedSeats.length);
     
     setIsProcessing(false);
   };
 
-  // Toplam Tutar
   const totalPrice = event.price * selectedSeats.length;
 
   return (
@@ -76,16 +69,16 @@ function TicketModal({ event, onClose, onConfirm }) {
                     const isOccupied = occupiedSeats.includes(index);
                     const isSelected = selectedSeats.includes(index);
                     
-                    let bgColor = "bg-outline-secondary"; // Boş
+                    let bgColor = "bg-outline-secondary"; 
                     let cursor = "pointer";
                     
                     if (isOccupied) {
-                        bgColor = "bg-danger opacity-50"; // Dolu (Kırmızı)
+                        bgColor = "bg-danger opacity-50"; 
                         cursor = "not-allowed";
                     } else if (isSelected) {
-                        bgColor = "bg-success"; // Seçili (Yeşil)
+                        bgColor = "bg-success"; 
                     } else {
-                        bgColor = "bg-secondary"; // Boş (Gri)
+                        bgColor = "bg-secondary"; 
                     }
 
                     return (

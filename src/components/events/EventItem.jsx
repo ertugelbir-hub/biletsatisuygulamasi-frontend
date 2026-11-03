@@ -6,6 +6,7 @@ function EventItem({ event, onSelect, onFavoriteToggle, isFavorite = false }) {
   const [isLiked, setIsLiked] = useState(isFavorite);
   const [loading, setLoading] = useState(false);
   const { t } = useTranslation();
+  const DEFAULT_EVENT_IMAGE = "/default1.jpg";
 
   useEffect(() => {
   if (isFavorite === true) {
@@ -16,79 +17,113 @@ function EventItem({ event, onSelect, onFavoriteToggle, isFavorite = false }) {
   }, [isFavorite]);
 
   const handleFavoriteClick = async (e) => {
-    e.stopPropagation(); // Karta tıklayınca detaya gitmesin, sadece favori çalışsın
+    e.stopPropagation(); 
     if (loading) return;
 
     setLoading(true);
-    try {
-      // Backend'e istek at (Ekle/Çıkar)
-      const res = await apiClient.post(`/api/favorites/${event.id}`);
-      
-     // Toggle işlemi (Tersine çevir)
+    try {      
+      const res = await apiClient.post(`/api/favorites/${event.id}`);      
+   
       const newState = !isLiked;
       setIsLiked(newState);
       
       // Mesaj göster
       if (res.data.includes("eklendi")) {
-          toast.success("Favorilere eklendi ❤️");
+          toast.success(t('toasts.favAdded'));
       } else {
-          toast.info("Favorilerden çıkarıldı 💔");
-          // Eğer Favorilerim sayfasındaysak, listeden düşmesi için tetikle
+          toast.info(t('toasts.favRemoved'));   
           if (onFavoriteToggle) onFavoriteToggle(); 
       }
 
     } catch (error) {
       console.error(error);
-      toast.error("İşlem başarısız (Giriş yaptınız mı?)");
-      // Hata olursa eski haline döndür
+      toast.error(t('toasts.favError'));
       setIsLiked(!isLiked);
     } finally {
       setLoading(false);
     }
   };  
+  const formatEventDate = (dateStr) => {
+    if (!dateStr) return "Tarih belirtilmedi";
+    try {
+      const d = new Date(dateStr);
+      return d.toLocaleDateString("tr-TR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+      }).replace(',', ' •');
+    } catch {
+      return dateStr.slice(0, 16);
+    }
+  };
 
   return (
     <div className="col-12 col-md-6 col-lg-4">
-      <div className="card h-100 shadow-sm border-0 position-relative" style={{ backgroundColor: "#ffffff" }}>
-        {/* --- ❤️ FAVORİ BUTONU (Senin eksik olan kısmın burası) --- */}
+      <div className="card h-100 shadow-sm border-0 position-relative overflow-hidden">
+        
+        {/* MODERN CAM EFEKTLİ FAVORİ BUTONU */}
         <button 
-            onClick={handleFavoriteClick}
-            className="btn position-absolute top-0 end-0 m-2 rounded-circle bg-white shadow-sm d-flex align-items-center justify-content-center"
-            style={{ width: '40px', height: '40px', zIndex: 10, border: 'none' }}
+          onClick={handleFavoriteClick}
+          className="btn position-absolute top-0 end-0 m-2 rounded-circle d-flex align-items-center justify-content-center"
+          style={{ 
+            width: '38px', 
+            height: '38px', 
+            zIndex: 10, 
+            backgroundColor: 'rgba(15, 23, 42, 0.75)',
+            backdropFilter: 'blur(8px)',
+            border: '1px solid rgba(255, 255, 255, 0.15)'
+          }}
+          title={isLiked ? "Favorilerden Çıkar" : "Favoriye Ekle"}
         >
-            <i className={`bi ${isLiked ? 'bi-heart-fill text-danger' : 'bi-heart text-secondary'}`} style={{ fontSize: '1.2rem' }}></i>
-        </button>
-        {/* -------------------------------------------------------- */}
+          <i 
+            className={`bi ${isLiked ? 'bi-heart-fill text-danger' : 'bi-heart text-white'}`} 
+            style={{ fontSize: '1.1rem' }}
+          ></i>
+        </button> 
 
-        <div style={{ height: "220px", overflow: "hidden" }}>
-            <img 
-                src={event.imageUrl} 
-                alt={event.title} 
-                className="card-img-top-custom" 
-            />
+        {/* ETKİNLİK GÖRSELİ*/}
+        <div style={{ height: "200px", overflow: "hidden", backgroundColor: "#0f172a" }}
+        onClick={() => onSelect(event)}>          
+          <img 
+            src={event.imageUrl || DEFAULT_EVENT_IMAGE} 
+            alt={event.title} 
+            className="w-100 h-100"
+            style={{ objectFit: "cover" }}
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.src = DEFAULT_EVENT_IMAGE;
+            }}
+          />
         </div>
-        <div className="card-body d-flex flex-column text-dark">
-          <h5 className="card-title fw-bold mb-2">{event.title}</h5>
+
+        {/* KART İÇERİĞİ */}
+        <div className="card-body d-flex flex-column">
+          <h5 className="card-title fw-bold mb-2 text-white">{event.title}</h5>
           
-          <p className="mb-1 text-secondary">
-            {event.city} • {event.venue}
+          <p className="mb-1 text-secondary small">
+            📍 {event.city} • {event.venue}
           </p>
           
           <p className="mb-3 small text-muted">
-             {event.dateTime ? new Date(event.dateTime).toLocaleString("tr-TR") : "Tarih yok"}
+            🗓️ {formatEventDate(event.dateTime)}
           </p>
 
           <div className="mt-auto">
-            <h6 className="fw-bold text-black mb-3">{t('eventDetail.price')}: {event.price} ₺</h6>
+            <h6 className="fw-bold mb-3" style={{ color: "#38bdf8" }}>
+              {t('eventDetail.price')}: {event.price} ₺
+            </h6>
             
             <button 
-              className="btn btn-primary w-100 fw-bold"
+              className="btn btn-primary w-100 fw-bold shadow-sm"
               onClick={() => onSelect(event)} 
             >
               {t('eventList.inspectBtn')}
             </button>
           </div>
         </div>
+
       </div>
     </div>
   );

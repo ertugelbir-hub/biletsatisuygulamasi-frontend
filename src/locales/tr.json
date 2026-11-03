@@ -1,7 +1,7 @@
 {
   "app": {
-    "title": "🎟️ Bilet Satış",
-    "cart": "🛒 Sepetim",
+    "title": "TicketFlow",
+    "cart": "Sepetim",
     "myTickets": "Biletlerim",
     "favorites": "Favorilerim",
     "adminPanel": "Yönetici Paneli",
@@ -28,19 +28,19 @@
   },
   "eventList": {
     "notFound": "Etkinlik bulunamadı.",
-    "stars": "🔥 Haftanın Yıldızları",
-    "forYou": "🚀 Sizin İçin",
-    "eventsTitle": "🎟️ Etkinlikler",
+    "stars": " Haftanın Yıldızları",
+    "forYou": " Sizin İçin",
+    "eventsTitle": "Etkinlikler",
     "sortLabel": "Sırala:",
-    "sortUpcoming": "📅 Yaklaşan Etkinlikler",
-    "sortNewest": "✨ Sisteme Son Eklenenler",
-    "sortPopular": "🔥 Popüler (Çok Satanlar)",
+    "sortUpcoming": " Yaklaşan Etkinlikler",
+    "sortNewest": "Sisteme Son Eklenenler",
+    "sortPopular": "Popüler (Çok Satanlar)",
     "goBtn": "Git",
     "inspectBtn": "İncele"
   },
   "cartPage": {
-    "empty": "Sepetin boş 😔",
-    "backToEvents": "🎸 Etkinliklere Dön",
+    "empty": "Sepetin boş ",
+    "backToEvents": "Etkinliklere Dön",
     "seats": "Koltuklar:",
     "qty": "Adet:",
     "coupon": "Kupon:",
@@ -109,12 +109,12 @@
     "selectedCount": "Seçilen:",
     "total": "Toplam:",
     "addToCart": "Sepete Ekle",
-    "buyNow": "Hızlı Satın Al (Sepetsiz)",
-    "couponSuccess": "🎄 Harika! %20 Yılbaşı İndirimi Uygulandı!",
-    "couponError": "❌ Geçersiz Kupon Kodu!",
+    "buyNow": "Hızlı Satın Al",
+    "couponSuccess": "Harika! %20 Yılbaşı İndirimi Uygulandı!",
+    "couponError": "Geçersiz Kupon Kodu!",
     "selectSeatWarning": "Lütfen haritadan en az bir koltuk seçin! 💺",
     "maxSeatWarning": "En fazla 6 bilet sepete ekleyebilirsin.",
-    "cartSuccess": "🛒 Biletler sepete eklendi!",
+    "cartSuccess": "Biletler sepete eklendi!",
     "purchaseSuccess": "🎉 {{count}} adet bilet başarıyla alındı!",
     "purchaseError": "Satın alma işlemi başarısız oldu.",
     "justSold": "⚠️ Az önce {{count}} bilet daha satıldı!",
@@ -146,7 +146,26 @@
       "posterUrl": "Afiş Resmi (URL)",
       "capacity": "Kapasite",
       "pcs": "Adet",
-      "createBtn": "Oluştur ve Yayınla"
+      "createBtn": "Oluştur ve Yayınla",
+      "editTitle": "Etkinliği Düzenle",
+      "name": "Etkinlik Adı",
+      "desc": "Etkinlik Açıklaması",
+      "phDesc": "Etkinlik kuralları, yaş sınırı ve detayları buraya yazınız...",
+      "city": "Şehir",
+      "venue": "Mekan",
+      "date": "Tarih",
+      "type": "Tür",
+      "posterHint": "Boş bırakırsan rastgele atanır",
+      "price": "Fiyat",
+      "updateBtn": "Güncelle",
+      "saving": "Oluşturuluyor, lütfen bekleyin...",
+      "types": {"concert": "Konser",
+      "theatre": "Tiyatro",
+      "cinema": "Sinema",
+      "sport": "Spor"
+      }
+      
+      
     },
     "reports": {
       "filters": "RAPOR FİLTRELERİ",
@@ -189,7 +208,91 @@
 },
   "errors": {
     "rateLimit": "Aga çok hızlısın, biraz yavaşla! Lütfen 1 dakika bekle."
-    }
-  
-  
+    },
+    "seatMap": {
+  "leftTribune": "SOL TRİBÜN",
+  "centerBlock": "ORTA BLOK (SAHNE ÖNÜ)",
+  "rightTribune": "SAĞ TRİBÜN",
+  "exitFoyer": "ÇIKIŞ / FUAYE",
+  "corridor": "KORİDOR",
+  "entranceEmergency": "GİRİŞ / ACİL ÇIKIŞ"
+},
+  "paymentModal": {
+  "title": "Güvenli Ödeme",
+  "cardNamePlaceholder": "ADINIZ SOYADINIZ",
+  "expiryLabel": "SKT",
+  "cardNumber": "Kart Numarası (16 Hane)",
+  "nameOnCard": "Kart Üzerindeki İsim",
+  "month": "Ay",
+  "year": "Yıl",
+  "cvc": "CVC",
+  "payAndFinish": "{{amount}} Öde ve Bitir",
+  "validationWarning": "Lütfen tüm kart bilgilerini eksiksiz doldurun!"
+},
+"footer": {
+  "status": "Sunucu Durumu",
+  "statusTooltip": "Tüm servisler aktif"
+},
+"toasts": {
+    "welcome": "👋 Hoşgeldin {{username}}",
+    "registerSuccess": "✅ Kayıt başarılı! Şimdi giriş yapabilirsin.",
+    "eventUpdated": "✅ Güncelleme başarılı!",
+    "eventCreated": "✅ Kayıt başarılı!",
+    "eventDeleted": "🗑️ Silindi.",
+    "deleteError": "Silinemedi.",
+    "ticketCancelled": "✅ Bilet iptal edildi.",
+    "ticketCancelError": "Bilet iptal edilemedi.",
+    "paymentSuccess": "🎉 Ödeme başarılı! İyi eğlenceler.",
+    "cartSuccess": "🛒 Biletler sepete eklendi!",
+    "couponSuccess": "🎉 Harika! %20 Yılbaşı İndirimi Uygulandı!",
+    "couponError": "❌ Geçersiz Kupon Kodu!",
+    "maxCouponTickets": "İndirim kuponu ile en fazla 2 bilet alabilirsiniz!",
+    "selectSeatWarning": "Lütfen haritadan en az bir koltuk seçin! 🎟️",
+    "maxSeatWarning": "En fazla 6 bilet sepete ekleyebilirsin.",
+    "favAdded": "Favorilere eklendi ❤️",
+    "favRemoved": "Favorilerden çıkarıldı 💔",
+    "favError": "İşlem başarısız (Giriş yaptınız mı?)",
+    "passwordMismatch": "Yeni şifreler uyuşmuyor!",
+    "passwordChanged": "✅ Şifreniz başarıyla değiştirildi!",
+    "passwordError": "Şifre değiştirilemedi.",
+    "reportFiltered": "Rapor filtrelendi.",
+    "filterCleared": "Filtre temizlendi.",
+    "reportError": "Rapor verileri alınamadı.",
+    "downloadSuccess": "{{type}} indirildi.",
+    "downloadError": "İndirme başarısız.",
+    "pdfPreparing": "PDF hazırlanıyor, lütfen bekleyin...",
+    "paymentError": "Ödeme sırasında bir hata oluştu: {{msg}}",
+    "unknownError": "Bilinmeyen hata",
+    "ticketsLoadError": "Biletlerin yüklenirken bir sorun oluştu.",
+    "eventNotFound": "Etkinlik bulunamadı.",
+    "eventDetailError": "Etkinlik detayına ulaşılamadı.",
+    "rateLimitWait": "Çok fazla istek gönderdiniz! Lütfen {{seconds}} saniye bekleyin. ⏳",
+    "rateLimitSlowDown": "Aga çok hızlısın, biraz yavaşla! Lütfen {{seconds}} saniye bekle. ⏳",
+    "serverUnreachable": "Sunucuya erişilemiyor veya bilinmeyen bir hata oluştu.",
+    "invalidCredentials": "Kullanıcı adı veya şifre hatalı.",
+    "unexpectedError": "Beklenmedik bir hata oluştu.",
+    "confirmAction": "Bu işlemi yapmak istediğine emin misin?"
+    
+  },
+  "successModal": {
+    "title": "Tebrikler! Biletiniz Hazır",
+    "desc": "Rezervasyonunuz onaylandı ve dijital biletiniz QR kodunuzla birlikte üretildi.",
+    "ticketNo": "Bilet Kayıt No: #{{id}}",
+    "success": "İşlem Başarılı",
+    "hint": "Etkinlik girişinde bu QR kodunu okutarak doğrudan geçiş yapabilirsiniz.",
+    "downloadPdf": "QR Kodlu Biletini İndir",
+    "continueShopping": "← Alışverişe Devam Et"
+  },
+  "modals": {
+    "analysisTitle": "Etkinlik Analizi",
+    "totalRevenue": "TOPLAM CİRO",
+    "soldTickets": "SATILAN BİLET",
+    "remainingSeats": "KALAN KOLTUK",
+    "occupancy": "Doluluk: %{{rate}}",
+    "noData": "Veri bulunamadı.",
+    "close": "Kapat",
+    "userHistoryTitle": "{{username}} - Bilet Geçmişi",
+    "userNoTickets": "Bu kullanıcının hiç bileti yok.",
+    "deletedEvent": "Silinmiş Etkinlik"
+  }
 }

@@ -1,7 +1,7 @@
 {
   "app": {
-    "title": "🎟️ Ticket Sales",
-    "cart": "🛒 My Cart",
+    "title": "TicketFlow",
+    "cart": "My Cart",
     "myTickets": "My Tickets",
     "favorites": "My Favorites",
     "adminPanel": "Admin Panel",
@@ -28,19 +28,19 @@
   },
   "eventList": {
     "notFound": "Event not found.",
-    "stars": "🔥 Stars of the Week",
-    "forYou": "🚀 For You",
-    "eventsTitle": "🎟️ Events",
+    "stars": "Stars of the Week",
+    "forYou": "For You",
+    "eventsTitle": "Events",
     "sortLabel": "Sort by:",
-    "sortUpcoming": "📅 Upcoming Events",
-    "sortNewest": "✨ Newly Added",
-    "sortPopular": "🔥 Popular (Best Sellers)",
+    "sortUpcoming": "Upcoming Events",
+    "sortNewest": "Newly Added",
+    "sortPopular": "Popular (Best Sellers)",
     "goBtn": "Go",
     "inspectBtn": "Inspect"
   },
   "cartPage": {
-    "empty": "Your cart is empty 😔",
-    "backToEvents": "🎸 Back to Events",
+    "empty": "Your cart is empty ",
+    "backToEvents": "Back to Events",
     "seats": "Seats:",
     "qty": "Qty:",
     "coupon": "Coupon:",
@@ -109,13 +109,13 @@
     "selectedCount": "Selected:",
     "total": "Total:",
     "addToCart": "Add to Cart",
-    "buyNow": "Buy Now (Direct)",
-    "couponSuccess": "🎄 Awesome! 20% New Year Discount Applied!",
-    "couponError": "❌ Invalid Coupon Code!",
+    "buyNow": "Buy Now",
+    "couponSuccess": "Awesome! 20% New Year Discount Applied!",
+    "couponError": "Invalid Coupon Code!",
     "selectSeatWarning": "Please select at least one seat from the map! 💺",
     "maxSeatWarning": "You can add a maximum of 6 tickets to your cart.",
-    "cartSuccess": "🛒 Tickets added to cart!",
-    "purchaseSuccess": "🎉 {{count}} tickets successfully purchased!",
+    "cartSuccess": "Tickets added to cart!",
+    "purchaseSuccess": "{{count}} tickets successfully purchased!",
     "purchaseError": "Purchase failed.",
     "justSold": "⚠️ {{count}} more tickets were just sold!",
     "couponPlaceholder": "Coupon Code (Ex: YILBASI)"
@@ -146,8 +146,28 @@
       "posterUrl": "Poster Image (URL)",
       "capacity": "Capacity",
       "pcs": "Pcs",
-      "createBtn": "Create and Publish"
-    },
+      "createBtn": "Create and Publish",      
+      "editTitle": "Edit Event",
+      "name": "Event Name", 
+      "desc": "Event Description",
+      "phDesc": "Write event rules, age limits, and details here...",
+      "city": "City",  
+      "venue": "Venue", 
+      "date": "Date",
+      "type": "Type",
+      "posterHint": "If left blank, randomly assigned",
+      "price": "Price", 
+      "updateBtn": "Update",
+      "saving": "Saving, please wait...",
+      "types": {
+      "concert": "Concert",
+      "theatre": "Theatre",
+      "cinema": "Cinema",
+      "sport": "Sport"
+    }
+  }
+  ,
+  
     "reports": {
       "filters": "REPORT FILTERS",
       "startDate": "Start Date",
@@ -190,5 +210,90 @@
   "errors": {
     "rateLimit": "You are sending too many requests! Please wait a minute."
   
+  },
+  "seatMap": {
+  "leftTribune": "LEFT STAND",
+  "centerBlock": "CENTER BLOCK (FRONT STAGE)",
+  "rightTribune": "RIGHT STAND",
+  "exitFoyer": "EXIT / FOYER",
+  "corridor": "AISLE",
+  "entranceEmergency": "ENTRANCE / EMERGENCY EXIT"
+},
+"paymentModal": {
+  "title": "Secure Payment",
+  "cardNamePlaceholder": "NAME SURNAME",
+  "expiryLabel": "EXP",
+  "cardNumber": "Card Number (16 Digits)",
+  "nameOnCard": "Name on Card",
+  "month": "Month",
+  "year": "Year",
+  "cvc": "CVC",
+  "payAndFinish": "Pay {{amount}} and Complete",
+  "validationWarning": "Please fill in all card details completely!"
+},
+"footer": {
+  "status": "Server Status",
+  "statusTooltip": "All systems operational"
+},
+"toasts": {
+    "welcome": "👋 Welcome {{username}}",
+    "registerSuccess": "✅ Registration successful! You can now log in.",
+    "eventUpdated": "✅ Update successful!",
+    "eventCreated": "✅ Event created successfully!",
+    "eventDeleted": "🗑️ Deleted.",
+    "deleteError": "Could not delete.",
+    "ticketCancelled": "✅ Ticket cancelled.",
+    "ticketCancelError": "Ticket could not be cancelled.",
+    "paymentSuccess": "🎉 Payment successful! Have fun.",
+    "cartSuccess": "🛒 Tickets added to cart!",
+    "couponSuccess": "🎉 Awesome! 20% New Year Discount Applied!",
+    "couponError": "❌ Invalid Coupon Code!",
+    "maxCouponTickets": "You can purchase at most 2 tickets with a discount coupon!",
+    "selectSeatWarning": "Please select at least one seat from the map! 🎟️",
+    "maxSeatWarning": "You can add a maximum of 6 tickets to your cart.",
+    "favAdded": "Added to favorites ❤️",
+    "favRemoved": "Removed from favorites 💔",
+    "favError": "Operation failed (Are you logged in?)",
+    "passwordMismatch": "New passwords do not match!",
+    "passwordChanged": "✅ Password changed successfully!",
+    "passwordError": "Could not change password.",
+    "reportFiltered": "Report filtered.",
+    "filterCleared": "Filter cleared.",
+    "reportError": "Failed to fetch report data.",
+    "downloadSuccess": "{{type}} downloaded.",
+    "downloadError": "Download failed.",
+    "pdfPreparing": "Preparing PDF, please wait...",
+    "paymentError": "An error occurred during payment: {{msg}}",
+    "unknownError": "Unknown error",
+    "ticketsLoadError": "A problem occurred while loading your tickets.",
+    "eventNotFound": "Event not found.",
+    "eventDetailError": "Could not reach event details.",
+    "rateLimitWait": "Too many requests! Please wait {{seconds}} seconds. ⏳",
+    "rateLimitSlowDown": "Whoa, too fast! Slow down a bit and wait {{seconds}} seconds. ⏳",
+    "serverUnreachable": "Server is unreachable or an unknown error occurred.",
+    "invalidCredentials": "Invalid username or password.",
+    "unexpectedError": "An unexpected error occurred.",
+    "confirmAction": "Are you sure you want to proceed?"
+  },
+  "successModal": {
+    "title": "Congratulations! Your Ticket is Ready",
+    "desc": "Your reservation is confirmed and your digital ticket with QR code has been generated.",
+    "ticketNo": "Ticket ID: #{{id}}",
+    "success": "Success",
+    "hint": "You can scan this QR code directly at the event entrance for admission.",
+    "downloadPdf": "Download QR Ticket",
+    "continueShopping": "← Continue Shopping"
+  },
+  "modals": {
+    "analysisTitle": "Event Analysis",
+    "totalRevenue": "TOTAL REVENUE",
+    "soldTickets": "SOLD TICKETS",
+    "remainingSeats": "REMAINING SEATS",
+    "occupancy": "Occupancy: %{{rate}}",
+    "noData": "No data found.",
+    "close": "Close",
+    "userHistoryTitle": "{{username}} - Ticket History",
+    "userNoTickets": "This user has no tickets yet.",
+    "deletedEvent": "Deleted Event"
   }
 }

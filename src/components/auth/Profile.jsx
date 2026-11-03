@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import apiClient from '../../apiClient'; // Yola dikkat et (../../)
+import apiClient from '../../apiClient';
 import { toast } from 'react-toastify';
 import { useTranslation } from 'react-i18next';
 function Profile({ onBack }) {
@@ -7,7 +7,6 @@ function Profile({ onBack }) {
   const role = localStorage.getItem("role") || sessionStorage.getItem("role");
   const { t } = useTranslation();
 
-  // Şifre State'leri
   const [passwords, setPasswords] = useState({
     oldPassword: "",
     newPassword: "",
@@ -23,25 +22,22 @@ function Profile({ onBack }) {
     e.preventDefault();
 
     if (passwords.newPassword !== passwords.confirmPassword) {
-      toast.error("Yeni şifreler uyuşmuyor!");
+      toast.error(t('toasts.passwordMismatch'));
       return;
     }
 
     setLoading(true);
-    try {
-      // Backend'e istek at
+    try {   
       await apiClient.post("/api/auth/change-password", {
         oldPassword: passwords.oldPassword,
         newPassword: passwords.newPassword
       });
 
-      toast.success("✅ Şifreniz başarıyla değiştirildi!");
-      // Formu temizle
+      toast.success(t('toasts.passwordChanged'));
       setPasswords({ oldPassword: "", newPassword: "", confirmPassword: "" });
 
     } catch (error) {
-      const msg = error.response?.data?.message || "Şifre değiştirilemedi.";
-      // Backend 'Mevcut şifre yanlış' derse burada yakalarız
+      const msg = error.response?.data?.message || t('toasts.passwordError');  
       toast.error(`❌ ${msg}`);
     } finally {
       setLoading(false);
