@@ -21,6 +21,18 @@ export const CartProvider = ({ children }) => {
   const removeFromCart = (id) => {
     setCartItems((prev) => prev.filter(item => item.id !== id));
   };
+  const removeCouponFromItem = (id) => {
+    setCartItems((prev) =>
+      prev.map((item) => {
+        if (item.id === id && item.couponCode) {
+          // %20 indirimli fiyatı 0.80'e bölerek orijinal fiyatına geri döndür
+          const originalPrice = Number((item.price / 0.80).toFixed(2));
+          return { ...item, price: originalPrice, couponCode: null };
+        }
+        return item;
+      })
+    );
+  };
 
   const clearCart = () => {
     setCartItems([]);
@@ -29,7 +41,7 @@ export const CartProvider = ({ children }) => {
   const totalPrice = cartItems.reduce((acc, item) => acc + item.price, 0);
 
   return (
-    <CartContext.Provider value={{ cartItems, addToCart, removeFromCart, clearCart, totalPrice }}>
+    <CartContext.Provider value={{ cartItems, addToCart, removeFromCart, clearCart, totalPrice,removeCouponFromItem }}>
       {children}
     </CartContext.Provider>
   );

@@ -220,11 +220,53 @@ return (
     <div className="card bg-dark border-secondary mb-4 shadow-lg">
       <div className="card-header bg-black text-white border-secondary py-3 d-flex justify-content-between align-items-center">
         <h5 className="mb-0 fw-bold">{t('eventDetail.stageSelection')}</h5>
-        {timeLeft && (
-          <div className="badge bg-warning text-dark px-3 py-2 fs-6">
-            ⏱️ {t('admin.seatMap.timeLimit')}: <span className="fw-bolder text-danger">{timeLeft}</span>
-          </div>
-        )}
+        {timeLeft && (() => {
+          const [mins, secs] = timeLeft.split(':').map(Number);
+          const totalSecs = (mins * 60) + secs;
+
+          // değişken renk kademeleri
+          const stepIndex = Math.floor(totalSecs / 10) % 6;
+          const colorSteps = [
+            { rgb: '239, 68, 68', hex: '#f87171', glow: 18 },   
+            { rgb: '245, 158, 11', hex: '#fbbf24', glow: 16 },  
+            { rgb: '16, 185, 129', hex: '#34d399', glow: 14 }, 
+            { rgb: '6, 182, 212', hex: '#22d3ee', glow: 16 },   
+            { rgb: '56, 189, 248', hex: '#38bdf8', glow: 18 },  
+            { rgb: '37, 99, 235', hex: '#60a5fa', glow: 20 }  
+          ];
+
+          const currentStyle = colorSteps[stepIndex];
+          // parlaklık azaltması
+          const subSecondRatio = ((totalSecs % 10) + 1) / 10;
+          const dynamicAlpha = 0.35 + (subSecondRatio * 0.65);
+
+          return (
+            <div
+              className="px-3 py-2 rounded-3 fs-6 d-flex align-items-center gap-2"
+              style={{
+                background: `rgba(${currentStyle.rgb}, ${0.12 + dynamicAlpha * 0.18})`,
+                border: `1px solid rgba(${currentStyle.rgb}, ${0.3 + dynamicAlpha * 0.7})`,
+                boxShadow: `0 0 ${Math.round(currentStyle.glow * dynamicAlpha)}px rgba(${currentStyle.rgb}, ${dynamicAlpha * 0.65})`,
+                transition: 'all 0.6s ease'
+              }}
+            >
+              <span>⏱️</span>
+              <span style={{ color: '#e2e8f0', fontWeight: '500' }}>
+                {t('admin.seatMap.timeLimit')}
+              </span>
+              <b
+                style={{
+                  color: currentStyle.hex,
+                  fontWeight: '900',
+                  textShadow: `0 0 ${Math.round(12 * dynamicAlpha)}px rgba(${currentStyle.rgb}, ${dynamicAlpha})`,
+                  transition: 'color 0.6s ease'
+                }}
+              >
+                {timeLeft}
+              </b>
+            </div>
+          );
+        })()}
       </div>
 
       <div className="card-body p-4">

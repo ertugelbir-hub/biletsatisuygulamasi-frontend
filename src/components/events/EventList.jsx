@@ -18,13 +18,31 @@ function EventList({ events, onEventSelect, sortType, onSortChange }) {
   }
 });
   useEffect(() => {
-  if (pinnedEvents.length === 0 && events && events.length > 0) {
-    // events dizisinden tamamen bağımsız yeni bir klon alıyoruz
-    const initialClone = JSON.parse(JSON.stringify(events));
-    setPinnedEvents(initialClone);
-    sessionStorage.setItem('pinnedAds', JSON.stringify(initialClone));
-  }
-}, [events, pinnedEvents]);
+    if (!events || events.length === 0) return;
+
+    if (pinnedEvents.length === 0) {
+      // İlk açılışta events dizisinden bağımsız klon oluştur
+      const initialClone = JSON.parse(JSON.stringify(events));
+      setPinnedEvents(initialClone);
+      sessionStorage.setItem('pinnedAds', JSON.stringify(initialClone));
+    } else {
+      // Ana listedeki fiyat dinamik olarak değiştiyse yan kartlardaki fiyatları da güncelle
+      let hasPriceChange = false;
+      const updatedPinned = pinnedEvents.map((pinned) => {
+        const fresh = events.find((e) => e.id === pinned.id);
+        if (fresh && fresh.price !== pinned.price) {
+          hasPriceChange = true;
+          return { ...pinned, price: fresh.price };
+        }
+        return pinned;
+      });
+
+      if (hasPriceChange) {
+        setPinnedEvents(updatedPinned);
+        sessionStorage.setItem('pinnedAds', JSON.stringify(updatedPinned));
+      }
+    }
+  }, [events]);
  const [showPromo, setShowPromo] = useState(() => {
   
   

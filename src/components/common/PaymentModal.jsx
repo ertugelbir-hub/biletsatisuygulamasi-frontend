@@ -80,7 +80,21 @@ const PaymentModal = ({ totalAmount, onClose, onConfirm }) => {
           />
         </div>
 
-        <form onSubmit={handleSubmit}>       
+        <form onSubmit={handleSubmit}>
+          {/* Test kartı gir*/}
+             <button
+              type="button"
+               className="btn btn-sm btn-outline-info mb-3 w-100"
+               onClick={() => setState({
+               number: '4543600000000006',
+               name: 'Test Kullanıcısı',
+               expiryMonth: '12',
+               expiryYear: String(currentYear + 2),
+               cvc: '123',
+               focus: ''
+            })}
+             >         Test Kartı Bilgilerini Doldur   
+         </button>
           {/* Kart Numarası */}
           <div className="mb-3">
             <input

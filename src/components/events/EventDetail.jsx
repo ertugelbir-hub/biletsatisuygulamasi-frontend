@@ -23,23 +23,27 @@ function EventDetail({ event, onBack,liveData }) {
   const [discountApplied, setDiscountApplied] = useState(false); 
   const [showPaymentModal, setShowPaymentModal] = useState(false); 
   const [purchasedTicket, setPurchasedTicket] = useState(null);
-const [showSuccessModal, setShowSuccessModal] = useState(false);
-const [selectedSeatLabels, setSelectedSeatLabels] = useState([]);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [selectedSeatLabels, setSelectedSeatLabels] = useState([]);
+  const [currentPrice, setCurrentPrice] = useState(event.price);
+  const [seatResetKey, setSeatResetKey] = useState(0);
 
   useEffect(() => {
     const fetchStock = async () => {
+      setCurrentPrice(event.price);
       try {
         const res = await apiClient.get("/api/events/reports/sales", { params: { eventId: event.id } });
         if(res.data) {
           if (res.data.remaining !== undefined) setCurrentStock(res.data.remaining);
           if (res.data.soldLast24Hours !== undefined) setSold24h(res.data.soldLast24Hours);
+          if (res.data.price !== undefined) setCurrentPrice(res.data.price);
         }
       } catch (error) {          
           setCurrentStock(event.totalSeats);
       }
     };
     fetchStock();
-  }, [event.id]);
+  }, [event.id, event.price, event.totalSeats]);
 
   useEffect(() => {
   window.scrollTo(0, 0);
@@ -56,7 +60,14 @@ const [selectedSeatLabels, setSelectedSeatLabels] = useState([]);
         if (liveData.quantity > 0) {
             setLastSoldAmount(liveData.quantity);           
             setTimeout(() => setLastSoldAmount(null), 10000);
-        }
+        }// güncel fiyat kontrolü
+        apiClient.get("/api/events/reports/sales", { params: { eventId: event.id } })
+        .then(res => {
+          if (res.data && res.data.price !== undefined) {
+            setCurrentPrice(res.data.price);
+          }
+        })
+        .catch(() => {});
     }
   }, [liveData, event.id]);
   if (!event) return null;
@@ -74,15 +85,25 @@ const formatDateTime = (dateStr) => {
     }
     return String(dateStr).replace('T', ' • ').slice(0, 18);
   };
-  const applyCoupon = () => {
-    if (couponCode.toUpperCase() === "YILBASI") {
-        setDiscountApplied(true);
-        toast.success(t('toasts.couponSuccess'));
-    } else {
-        setDiscountApplied(false);
-        toast.error(t('toasts.couponError'));
-    }
-  };
+ const applyCoupon = () => {
+  const normalizedCode = couponCode
+    .trim()
+    .replace(/ı/g, 'I')
+    .replace(/i/g, 'I')
+    .replace(/İ/g, 'I')
+    .replace(/ş/g, 'S')
+    .replace(/Ş/g, 'S')
+    .toUpperCase();
+
+  if (normalizedCode === "YILBASI") {
+      setCouponCode("YILBASI");
+      setDiscountApplied(true);
+      toast.success(t('toasts.couponSuccess'));
+  } else {
+      setDiscountApplied(false);
+      toast.error(t('toasts.couponError'));
+  }
+};
   const handleAddToCart = () => {
     if (!selectedSeatIds || selectedSeatIds.length === 0) {
       toast.warning(t('toasts.selectSeatWarning'));
@@ -96,7 +117,7 @@ const formatDateTime = (dateStr) => {
         if (discountApplied && selectedSeatIds.length > 2) {
     toast.warning(t('toasts.maxCouponTickets'));
     return;
-}
+}setSeatResetKey(prev => prev + 1);
     
   
     const cartItem = {
@@ -107,8 +128,8 @@ const formatDateTime = (dateStr) => {
       seatLabels: selectedSeatLabels,
       quantity: selectedSeatIds.length,
       price: discountApplied 
-             ? (selectedSeatIds.length * event.price * 0.80) 
-             : (selectedSeatIds.length * event.price),
+             ? (selectedSeatIds.length * currentPrice * 0.80) 
+             : (selectedSeatIds.length * currentPrice),
       couponCode: discountApplied ? couponCode : null
     };
 
@@ -140,16 +161,29 @@ const formatDateTime = (dateStr) => {
         quantity: selectedSeatIds.length, 
         couponCode: discountApplied ? "YILBASI" : ""        
       };
-
+            // Dinamik fiyat artmış mı diye backend'den güncel etkinliği çek
       const res = await apiClient.post("/api/tickets/purchase", requestBody);
-
       toast.success(t('eventDetail.purchaseSuccess', { count: selectedSeatIds.length }));
       setPurchasedTicket(res.data);
+      setShowSuccessModal(true);setPurchasedTicket(res.data);
       setShowSuccessModal(true);
-          
-      setTimeout(() => {
-          onBack();
-      }, 10000);
+
+      // Seçili koltukları, kuponu ve SeatMap sayacını sıfırla
+      setSelectedSeatIds([]);
+      setSelectedSeatLabels([]);
+      setDiscountApplied(false);
+      setCouponCode("");
+      setSeatResetKey(prev => prev + 1);
+      
+      try {
+        const updatedReportRes = await apiClient.get("/api/events/reports/sales", { params: { eventId: event.id } });
+        if (updatedReportRes.data && updatedReportRes.data.price !== undefined) {
+          setCurrentPrice(updatedReportRes.data.price);
+        }
+      } catch (e) {
+        console.error("Güncel fiyat alınamadı", e);
+      }               
+     
 
     } catch (error) {
       console.error("Satın alma hatası:", error);
@@ -223,6 +257,7 @@ const formatDateTime = (dateStr) => {
             {/* KOLTUK HARİTASI*/}
               <hr className="border-secondary" />
               <SeatMap 
+                  key={seatResetKey}
                   eventId={event.id} 
                   onSelectionChange={(ids, labels) => {setSelectedSeatIds(ids);setSelectedSeatLabels(labels || []);} }
               />
@@ -237,13 +272,13 @@ const formatDateTime = (dateStr) => {
                 <span className="d-block text-secondary small">{t('eventDetail.ticketPrice')}</span>
                 {discountApplied ? (
                     <div>
-                        <span className="text-decoration-line-through text-muted fs-5 me-2">{event.price} ₺</span>
+                        <span className="text-decoration-line-through text-muted fs-5 me-2">{currentPrice} ₺</span>
                         <span className="display-6 fw-bold text-warning">
-                            {discountApplied ? (event.price * 0.8).toFixed(2) : event.price} ₺
+                            {discountApplied ? (currentPrice * 0.8).toFixed(2) : currentPrice} ₺
                         </span>
                     </div>
                 ) : (
-                    <span className="display-6 fw-bold text-success">{event.price} ₺</span>
+                    <span className="display-6 fw-bold text-success">{currentPrice} ₺</span>
                 )}
               </div>
               {/* Kupon kısmı*/}
@@ -256,15 +291,28 @@ const formatDateTime = (dateStr) => {
                     onChange={(e) => setCouponCode(e.target.value)}
                     disabled={discountApplied} // İndirim varsa kutuyu kilitle
                   />
-                  <button 
-                    className="btn btn-outline-warning" 
-                    type="button" 
-                    onClick={applyCoupon}
-                    disabled={discountApplied}
-                  >
-                   {t('eventDetail.apply')}
-                  </button>
-              </div>
+                  {discountApplied ? (
+            <button
+             className="btn btn-outline-danger"
+              type="button"
+             onClick={() => {
+              setDiscountApplied(false);
+                setCouponCode("");
+               toast.info("Kupon kaldırıldı.");
+     }}
+    >
+     Kaldır ✖
+       </button>
+      ) : (
+     <button
+     className="btn btn-outline-warning"
+    type="button"
+    onClick={applyCoupon}
+      >
+     {t('eventDetail.apply')}
+    </button>
+        )}
+      </div>
               {/* Seçim Özeti */}
               <div className="bg-secondary bg-opacity-25 p-3 rounded mb-3 text-start">
                   <div className="d-flex justify-content-between mb-2">
@@ -275,8 +323,8 @@ const formatDateTime = (dateStr) => {
                       <span>{t('eventDetail.total')}</span>
                       <span className="fw-bold text-info fs-5">
                           {discountApplied 
-                           ? (selectedSeatIds.length * event.price * 0.80).toFixed(2) 
-                           : (selectedSeatIds.length * event.price).toFixed(2)
+                           ? (selectedSeatIds.length * currentPrice * 0.80).toFixed(2) 
+                           : (selectedSeatIds.length * currentPrice).toFixed(2)
                          } ₺
                       </span>
                   </div>
@@ -285,6 +333,7 @@ const formatDateTime = (dateStr) => {
                 className="btn btn-warning w-100 py-3 mb-2 fw-bold fs-5 shadow-sm text-dark"
                 onClick={handleAddToCart}
                 disabled={selectedSeatIds.length === 0}
+                
               >
                 🛒 {t('eventDetail.addToCart')}
               </button>
@@ -311,8 +360,8 @@ const formatDateTime = (dateStr) => {
             // İndirimli tutarı hesaplayıp gösterelim
             totalAmount={
                 discountApplied 
-                ? (selectedSeatIds.length * event.price * 0.80).toFixed(2) + " ₺"
-                : (selectedSeatIds.length * event.price).toFixed(2) + " ₺"
+                ? (selectedSeatIds.length * currentPrice * 0.80).toFixed(2) + " ₺"
+                : (selectedSeatIds.length * currentPrice).toFixed(2) + " ₺"
             }
             onClose={() => setShowPaymentModal(false)}
             onConfirm={() => {
@@ -325,6 +374,13 @@ const formatDateTime = (dateStr) => {
       {showSuccessModal && (
   <PurchaseSuccessModal 
     ticketData={purchasedTicket}
+    onDismiss={() => {
+         setShowSuccessModal(false);
+         setSelectedSeatIds([]);
+         setSelectedSeatLabels([]);
+         setDiscountApplied(false);
+         setCouponCode("");
+       }}
     onClose={() => {
       setShowSuccessModal(false);
       onBack(); 

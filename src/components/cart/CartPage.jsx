@@ -8,7 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import PurchaseSuccessModal from '../common/PurchaseSuccessModal';
 
 const CartPage = ({ onBack, onSelectEvent }) => {
-  const { cartItems, removeFromCart, clearCart, totalPrice } = useCart();
+  const { cartItems, removeFromCart, clearCart, totalPrice,removeCouponFromItem } = useCart();
   const [showPayment, setShowPayment] = useState(false);
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -84,9 +84,33 @@ const [showSuccessModal, setShowSuccessModal] = useState(false);
                   {t('cartPage.seats')}{' '}
                   {(item.seatLabels && item.seatLabels.length > 0 ? item.seatLabels : item.seatIds).join(", ")} |{' '}
                   {t('cartPage.qty')} {item.quantity}
-                  {item.couponCode && <span className="badge bg-warning text-dark ms-2">{t('cartPage.coupon')} {item.couponCode}</span>}
-                 </p>
-                </div>
+        {item.couponCode && (
+         <span className="badge bg-warning text-dark ms-2 d-inline-flex align-items-center gap-1">
+         {t('cartPage.coupon')} {item.couponCode}
+         <button
+         type="button"
+          onClick={() => {
+         removeCouponFromItem(item.id);
+          toast.info("Kupon kaldırıldı.");
+        }}
+        style={{
+          background: 'transparent',
+          border: 'none',
+          color: '#000',
+          fontWeight: 'bold',
+          padding: '0 2px',
+          cursor: 'pointer',
+          lineHeight: 1
+     }}
+          title="Kuponu Kaldır"
+  >
+      ✖
+    </button>
+  </span>
+)}
+</p>
+</div>
+                
                 <div className="d-flex align-items-center gap-3">
                   <span className="fs-5 fw-bold">{item.price.toFixed(2)} ₺</span>
                   <button onClick={() => removeFromCart(item.id)} className="btn btn-outline-danger btn-sm">{t('cartPage.delete')}</button>

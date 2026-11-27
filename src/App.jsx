@@ -67,10 +67,33 @@ function App() {
       stompClient.debug = () => {}; 
 
       stompClient.connect({}, () => {
-        stompClient.subscribe('/topic/sales', (message) => {
+        stompClient.subscribe('/topic/sales', async (message) => {
           try {
             const eventData = JSON.parse(message.body);                 
             setLiveData(eventData);
+            // Güncel fiyati vermek
+            if (eventData && eventData.eventId) {
+              try {
+                const res = await apiClient.get("/api/events/reports/sales", {
+                  params: { eventId: eventData.eventId }
+                });
+                if (res.data && res.data.price !== undefined) {
+                  const updatedPrice = res.data.price;
+                  setEvents((prevEvents) =>
+                    prevEvents.map((ev) =>
+                      ev.id === eventData.eventId ? { ...ev, price: updatedPrice } : ev
+                    )
+                  );
+                  setSelectedEvent((prevSelected) =>
+                    prevSelected && prevSelected.id === eventData.eventId
+                      ? { ...prevSelected, price: updatedPrice }
+                      : prevSelected
+                  );
+                }
+              } catch (priceErr) {
+                console.error("Canlı fiyat güncellenemedi:", priceErr);
+              }
+            }
           } catch (err) {
             console.error("Mesaj okuma hatası:", err);
           }

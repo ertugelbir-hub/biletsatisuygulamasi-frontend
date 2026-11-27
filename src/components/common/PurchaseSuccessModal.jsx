@@ -2,7 +2,7 @@ import React from 'react';
 import { downloadPdfTicket } from '../../utils/pdfHelper';
 import { useTranslation } from 'react-i18next';
 
-function PurchaseSuccessModal({ ticketData, onClose, onGoToTickets }) {
+function PurchaseSuccessModal({ ticketData, onClose, onGoToTickets,onDismiss }) {
   const ticketId = Array.isArray(ticketData) ? ticketData[0]?.id : ticketData?.id;
   const { t } = useTranslation();
 
@@ -39,7 +39,16 @@ function PurchaseSuccessModal({ ticketData, onClose, onGoToTickets }) {
           border: '1px solid rgba(56, 189, 248, 0.35)',
           boxShadow: '0 25px 60px rgba(0, 0, 0, 0.85), 0 0 35px rgba(56, 189, 248, 0.2)'
         }}
+        
       >
+        {/* Çarpı */}
+     <button
+       type="button"
+       className="btn-close btn-close-white"
+       style={{ position: 'absolute', top: '20px', right: '20px', zIndex: 10 }}
+       onClick={onDismiss || onClose}
+       title="Kapat ve Etkinlikte Kal"
+     />
         <div className="mb-3">
           <span style={{ fontSize: '4.2rem', filter: 'drop-shadow(0 0 20px rgba(34, 197, 94, 0.6))' }}>
             🎉
